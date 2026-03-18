@@ -6,7 +6,9 @@ import com.example.SpringEventDriven.entity.PurchaseOrder;
 import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
 import com.example.SpringEventDriven.entity.Role;
 import com.example.SpringEventDriven.entity.User;
+import com.example.SpringEventDriven.event.PurchaseOrderEvent;
 import com.example.SpringEventDriven.repository.PurchaseOrderRepository;
+import com.example.SpringEventDriven.service.PurchaseOrderEventPublisher;
 import com.example.SpringEventDriven.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Service
@@ -24,6 +27,7 @@ import java.util.Set;
 public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
+    private final PurchaseOrderEventPublisher eventPublisher;
 
     private static final int MAX_PAGE_SIZE = 50;
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "amount", "status", "title");
@@ -43,11 +47,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     public Page<PurchaseOrderResponse> getList(PurchaseOrderStatus status, int page, int size, String sortBy, User currentUser) {
-        
+
         int safeSize = Math.min(size, MAX_PAGE_SIZE);
-
         String safeSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "createdAt";
-
         Pageable pageable = PageRequest.of(page, safeSize, Sort.by(Sort.Direction.DESC, safeSortBy));
 
         boolean isRequester = currentUser.getRole() == Role.REQUESTER;
@@ -95,7 +97,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         }
 
         po.setStatus(PurchaseOrderStatus.MANAGER_APPROVED);
-        return toResponse(purchaseOrderRepository.save(po));
+        PurchaseOrder saved = purchaseOrderRepository.save(po);
+        publishEvent(saved, currentUser.getUsername());
+        return toResponse(saved);
     }
 
     @Override
@@ -109,7 +113,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         }
 
         po.setStatus(PurchaseOrderStatus.REJECTED);
-        return toResponse(purchaseOrderRepository.save(po));
+        PurchaseOrder saved = purchaseOrderRepository.save(po);
+        publishEvent(saved, currentUser.getUsername());
+        return toResponse(saved);
     }
 
     @Override
@@ -123,7 +129,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         }
 
         po.setStatus(PurchaseOrderStatus.FINANCE_APPROVED);
-        return toResponse(purchaseOrderRepository.save(po));
+        PurchaseOrder saved = purchaseOrderRepository.save(po);
+        publishEvent(saved, currentUser.getUsername());
+        return toResponse(saved);
     }
 
     @Override
@@ -137,12 +145,10 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         }
 
         po.setStatus(PurchaseOrderStatus.REJECTED);
-        return toResponse(purchaseOrderRepository.save(po));
+        PurchaseOrder saved = purchaseOrderRepository.save(po);
+        publishEvent(saved, currentUser.getUsername());
+        return toResponse(saved);
     }
-
-
-
-
 
     private PurchaseOrderResponse toResponse(PurchaseOrder po) {
         return PurchaseOrderResponse.builder()
@@ -155,5 +161,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 .createdAt(po.getCreatedAt())
                 .updatedAt(po.getUpdatedAt())
                 .build();
+    }
+
+    private void publishEvent(PurchaseOrder po, String actorUsername) {
+        eventPublisher.publishStatusChanged(
+                PurchaseOrderEvent.builder()
+                        .poId(po.getId())
+                        .newStatus(po.getStatus())
+                        .actorUsername(actorUsername)
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
     }
 }
