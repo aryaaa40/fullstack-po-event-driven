@@ -13,4 +13,13 @@ public interface PurchaseOrderService {
     Page<PurchaseOrderResponse> getList(PurchaseOrderStatus status, int page, int size, String sortBy, User currentUser);
 
     PurchaseOrderResponse getById(Long id, User currentUser);
+
+    PurchaseOrderResponse approve(Long id, User currentUser);
+
+    PurchaseOrderResponse reject(Long id, User currentUser);
+
+    PurchaseOrderResponse financeApprove(Long id, User currentUser);
+
+    PurchaseOrderResponse financeReject(Long id, User currentUser);
+
 }

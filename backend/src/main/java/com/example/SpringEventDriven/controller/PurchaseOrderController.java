@@ -56,4 +56,45 @@ public class PurchaseOrderController {
         PurchaseOrderResponse result = purchaseOrderService.getById(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success(200, "Purchase order retrieved successfully", result));
     }
+
+    @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> approve(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+
+        PurchaseOrderResponse result = purchaseOrderService.approve(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(200, "Purchase order approved by manager", result));
+    }
+
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> reject(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+
+        PurchaseOrderResponse result = purchaseOrderService.reject(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(200, "Purchase order rejected by manager", result));
+    }
+
+    @PatchMapping("/{id}/finance-approve")
+    @PreAuthorize("hasRole('FINANCE')")
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> financeApprove(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+
+        PurchaseOrderResponse result = purchaseOrderService.financeApprove(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(200, "Purchase order approved by finance", result));
+    }
+
+    @PatchMapping("/{id}/finance-reject")
+    @PreAuthorize("hasRole('FINANCE')")
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> financeReject(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+
+        PurchaseOrderResponse result = purchaseOrderService.financeReject(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(200, "Purchase order rejected by finance", result));
+    }
+
 }

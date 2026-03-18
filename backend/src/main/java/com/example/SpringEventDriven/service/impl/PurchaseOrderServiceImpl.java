@@ -84,6 +84,66 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         return toResponse(po);
     }
 
+    @Override
+    public PurchaseOrderResponse approve(Long id, User currentUser) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase Order not found"));
+
+        if (po.getStatus() != PurchaseOrderStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Only PENDING purchase orders can be approved by manager");
+        }
+
+        po.setStatus(PurchaseOrderStatus.MANAGER_APPROVED);
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    @Override
+    public PurchaseOrderResponse reject(Long id, User currentUser) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase Order not found"));
+
+        if (po.getStatus() != PurchaseOrderStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Only PENDING purchase orders can be rejected by manager");
+        }
+
+        po.setStatus(PurchaseOrderStatus.REJECTED);
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    @Override
+    public PurchaseOrderResponse financeApprove(Long id, User currentUser) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase Order not found"));
+
+        if (po.getStatus() != PurchaseOrderStatus.MANAGER_APPROVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Only MANAGER_APPROVED purchase orders can be approved by finance");
+        }
+
+        po.setStatus(PurchaseOrderStatus.FINANCE_APPROVED);
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+    @Override
+    public PurchaseOrderResponse financeReject(Long id, User currentUser) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase Order not found"));
+
+        if (po.getStatus() != PurchaseOrderStatus.MANAGER_APPROVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Only MANAGER_APPROVED purchase orders can be rejected by finance");
+        }
+
+        po.setStatus(PurchaseOrderStatus.REJECTED);
+        return toResponse(purchaseOrderRepository.save(po));
+    }
+
+
+
+
+
     private PurchaseOrderResponse toResponse(PurchaseOrder po) {
         return PurchaseOrderResponse.builder()
                 .id(po.getId())
