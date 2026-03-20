@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { poRepository } from "@/lib/repositories/poRepository";
 import { PurchaseOrder, POStatus } from "@/types/po";
@@ -18,9 +18,10 @@ export function useDashboardPOs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchPOs = useCallback(() => {
     if (!role) return;
     const status = DASHBOARD_STATUS[role];
+    setLoading(true);
     poRepository
       .getPOs({ status })
       .then((page) => setPOs(page.content))
@@ -28,5 +29,9 @@ export function useDashboardPOs() {
       .finally(() => setLoading(false));
   }, [role]);
 
-  return { pos, loading, error };
+  useEffect(() => {
+    fetchPOs();
+  }, [fetchPOs]);
+
+  return { pos, loading, error, refetch: fetchPOs };
 }

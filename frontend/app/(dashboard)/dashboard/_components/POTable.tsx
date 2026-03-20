@@ -1,19 +1,18 @@
 import Link from "next/link";
 import { Eye } from "lucide-react";
-import { PurchaseOrder, POStatus } from "@/types/po";
+import { PurchaseOrder, POStatus, POPriority } from "@/types/po";
 
-const STATUS_STYLE: Record<
-  POStatus,
-  { bg: string; color: string; label: string }
-> = {
+const STATUS_STYLE: Record<POStatus, { bg: string; color: string; label: string }> = {
   PENDING: { bg: "#0053db", color: "#f8f7ff", label: "Pending" },
-  MANAGER_APPROVED: {
-    bg: "#6750A4",
-    color: "#f3eeff",
-    label: "Manager Approved",
-  },
+  MANAGER_APPROVED: { bg: "#6750A4", color: "#f3eeff", label: "Manager Approved" },
   FINANCE_APPROVED: { bg: "#006d4a", color: "#e6ffee", label: "Approved" },
   REJECTED: { bg: "#9f403d", color: "#fff7f6", label: "Rejected" },
+};
+
+const PRIORITY_STYLE: Record<POPriority, { bg: string; color: string }> = {
+  NORMAL: { bg: "#f0f4f7", color: "#566166" },
+  URGENT: { bg: "#fef3c7", color: "#b45309" },
+  CRITICAL: { bg: "#fff7f6", color: "#9f403d" },
 };
 
 function StatusBadge({ status }: { status: POStatus }) {
@@ -24,6 +23,30 @@ function StatusBadge({ status }: { status: POStatus }) {
       style={{ backgroundColor: s.bg, color: s.color }}
     >
       {s.label}
+    </span>
+  );
+}
+
+function PriorityBadge({ priority }: { priority: POPriority }) {
+  const s = PRIORITY_STYLE[priority];
+  return (
+    <span
+      className="whitespace-nowrap rounded-xl px-2.5 py-1.5 text-xs font-semibold"
+      style={{ backgroundColor: s.bg, color: s.color }}
+    >
+      {priority}
+    </span>
+  );
+}
+
+function CategoryBadge({ category }: { category: string | null }) {
+  if (!category) return <span className="text-xs" style={{ color: "#566166" }}>—</span>;
+  return (
+    <span
+      className="whitespace-nowrap rounded-xl px-2.5 py-1.5 text-xs font-semibold"
+      style={{ backgroundColor: "#f0f4f7", color: "#566166" }}
+    >
+      {category.replace(/_/g, " ")}
     </span>
   );
 }
@@ -39,6 +62,17 @@ function formatDate(dateStr: string) {
 function formatAmount(amount: number) {
   return `Rp ${amount.toLocaleString("id-ID")}`;
 }
+
+const COLUMNS = [
+  "PO NUMBER",
+  "TITLE",
+  "CATEGORY",
+  "PRIORITY",
+  "AMOUNT",
+  "CREATED AT",
+  "STATUS",
+  "ACTION",
+];
 
 interface Props {
   pos: PurchaseOrder[];
@@ -56,10 +90,7 @@ export default function POTable({
   return (
     <div
       className="rounded-2xl"
-      style={{
-        backgroundColor: "#ffffff",
-        boxShadow: "0 4px 20px rgba(42,52,57,0.05)",
-      }}
+      style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 20px rgba(42,52,57,0.05)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-5">
@@ -75,8 +106,8 @@ export default function POTable({
           </h2>
           {!loading && !error && (
             <p className="mt-0.5 text-xs" style={{ color: "#566166" }}>
-              You have {pos.length} purchase order{pos.length !== 1 ? "s" : ""}{" "}
-              recorded in the system.
+              You have {pos.length} purchase order{pos.length !== 1 ? "s" : ""} recorded in
+              the system.
             </p>
           )}
         </div>
@@ -87,14 +118,7 @@ export default function POTable({
         <table className="w-full">
           <thead>
             <tr style={{ borderTop: "1px solid rgba(42,52,57,0.06)" }}>
-              {[
-                "PO NUMBER",
-                "TITLE",
-                "AMOUNT",
-                "CREATED AT",
-                "STATUS",
-                "ACTION",
-              ].map((col) => (
+              {COLUMNS.map((col) => (
                 <th
                   key={col}
                   className="px-6 py-3 text-left text-xs font-semibold tracking-wider"
@@ -109,7 +133,7 @@ export default function POTable({
             {loading && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={COLUMNS.length}
                   className="px-6 py-8 text-center text-sm"
                   style={{ color: "#566166" }}
                 >
@@ -120,7 +144,7 @@ export default function POTable({
             {!loading && error && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={COLUMNS.length}
                   className="px-6 py-8 text-center text-sm"
                   style={{ color: "#9f403d" }}
                 >
@@ -131,7 +155,7 @@ export default function POTable({
             {!loading && !error && pos.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={COLUMNS.length}
                   className="px-6 py-8 text-center text-sm"
                   style={{ color: "#566166" }}
                 >
@@ -156,11 +180,14 @@ export default function POTable({
                       #PO-{String(po.id).padStart(3, "0")}
                     </Link>
                   </td>
-                  <td
-                    className="px-6 py-4 text-sm"
-                    style={{ color: "#2a3439" }}
-                  >
+                  <td className="px-6 py-4 text-sm" style={{ color: "#2a3439" }}>
                     {po.title}
+                  </td>
+                  <td className="px-6 py-4">
+                    <CategoryBadge category={po.category} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <PriorityBadge priority={po.priority} />
                   </td>
                   <td
                     className="px-6 py-4 text-sm font-medium"
@@ -168,10 +195,7 @@ export default function POTable({
                   >
                     {formatAmount(po.amount)}
                   </td>
-                  <td
-                    className="px-6 py-4 text-sm"
-                    style={{ color: "#566166" }}
-                  >
+                  <td className="px-6 py-4 text-sm" style={{ color: "#566166" }}>
                     {formatDate(po.createdAt)}
                   </td>
                   <td className="px-6 py-4">

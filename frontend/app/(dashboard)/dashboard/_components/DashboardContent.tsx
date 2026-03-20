@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useDashboardPOs } from "@/lib/hooks/useDashboardPOs";
+import { usePONotification } from "@/lib/hooks/usePONotification";
 import { Role } from "@/types/auth";
 import WelcomeCard from "./WelcomeCard";
 import StatCards from "./StatCards";
@@ -15,7 +17,15 @@ const TABLE_TITLE: Record<Role, string> = {
 
 export default function DashboardContent() {
   const { username, role } = useAuthStore();
-  const { pos, loading, error } = useDashboardPOs();
+  const { pos, loading, error, refetch } = useDashboardPOs();
+  const { notifications } = usePONotification();
+
+  // Auto-refetch tabel saat ada event WebSocket masuk
+  useEffect(() => {
+    if (notifications.length > 0) {
+      refetch();
+    }
+  }, [notifications.length, refetch]);
 
   if (!role) return null;
 

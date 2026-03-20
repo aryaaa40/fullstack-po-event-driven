@@ -5,6 +5,8 @@ import { ChevronLeft } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { usePODetail } from "@/lib/hooks/usePODetail";
 import PODetailCard from "./PODetailCard";
+import PODetailItemsTable from "./PODetailItemsTable";
+import PODetailExtras from "./PODetailExtras";
 import POActionButtons from "./POActionButtons";
 
 export default function PODetailContent({ id }: { id: number }) {
@@ -50,21 +52,28 @@ export default function PODetailContent({ id }: { id: number }) {
       {/* Content */}
       {!loading && !error && po && (
         <div className="flex gap-5">
-          {/* Left — detail card (grows) */}
-          <div className="flex-1">
+          {/* Left — stacked cards */}
+          <div className="flex flex-1 flex-col gap-5">
             <PODetailCard po={po} />
+            {po.items.length > 0 && (
+              <PODetailItemsTable items={po.items} totalAmount={po.amount} />
+            )}
+            <PODetailExtras po={po} />
           </div>
 
-          {/* Right — action panel (fixed width) */}
+          {/* Right — action panel */}
           <div className="flex w-72 shrink-0 flex-col gap-4">
             {role && (
               <POActionButtons po={po} role={role} onSuccess={refetch} />
             )}
 
-            {/* Status history placeholder */}
+            {/* Status widget */}
             <div
               className="rounded-2xl p-6"
-              style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 20px rgba(42,52,57,0.05)" }}
+              style={{
+                backgroundColor: "#ffffff",
+                boxShadow: "0 4px 20px rgba(42,52,57,0.05)",
+              }}
             >
               <h2
                 className="text-base font-bold"
@@ -82,7 +91,9 @@ export default function PODetailContent({ id }: { id: number }) {
                 </span>
                 . Last updated on{" "}
                 {new Date(po.updatedAt).toLocaleDateString("id-ID", {
-                  day: "numeric", month: "long", year: "numeric",
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
                 })}
                 .
               </p>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, FileText } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { usePOList } from "@/lib/hooks/usePOList";
+import { usePONotification } from "@/lib/hooks/usePONotification";
 import { POStatus } from "@/types/po";
 import POTable from "@/app/(dashboard)/dashboard/_components/POTable";
 
@@ -36,8 +37,16 @@ const STATUSES = ["PENDING", "MANAGER_APPROVED", "FINANCE_APPROVED", "REJECTED"]
 
 export default function POListContent() {
   const role = useAuthStore((s) => s.role);
-  const { pos, loading, error } = usePOList();
+  const { pos, loading, error, refetch } = usePOList();
+  const { notifications } = usePONotification();
   const [activeFilter, setActiveFilter] = useState<POStatus | null>(null);
+
+  // Auto-refetch tabel saat ada event WebSocket masuk
+  useEffect(() => {
+    if (notifications.length > 0) {
+      refetch();
+    }
+  }, [notifications.length, refetch]);
 
   const config = role ? PAGE_CONFIG[role] : PAGE_CONFIG.REQUESTER;
 
