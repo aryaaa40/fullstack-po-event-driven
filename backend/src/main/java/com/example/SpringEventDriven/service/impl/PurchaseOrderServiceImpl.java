@@ -1,8 +1,12 @@
 package com.example.SpringEventDriven.service.impl;
 
+import com.example.SpringEventDriven.dto.request.CreatePurchaseOrderItemRequest;
 import com.example.SpringEventDriven.dto.request.CreatePurchaseOrderRequest;
+import com.example.SpringEventDriven.dto.response.PurchaseOrderItemResponse;
 import com.example.SpringEventDriven.dto.response.PurchaseOrderResponse;
+import com.example.SpringEventDriven.entity.POPriority;
 import com.example.SpringEventDriven.entity.PurchaseOrder;
+import com.example.SpringEventDriven.entity.PurchaseOrderItem;
 import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
 import com.example.SpringEventDriven.entity.Role;
 import com.example.SpringEventDriven.entity.User;
@@ -17,12 +21,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
@@ -34,12 +43,56 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     public PurchaseOrderResponse create(CreatePurchaseOrderRequest request, User currentUser) {
+        // Hitung total dari items jika ada; fallback ke request.amount
+        List<PurchaseOrderItem> itemEntities = new ArrayList<>();
+        BigDecimal totalAmount;
+
+        boolean hasItems = request.getItems() != null && !request.getItems().isEmpty();
+
+        if (hasItems) {
+            totalAmount = BigDecimal.ZERO;
+            for (CreatePurchaseOrderItemRequest itemReq : request.getItems()) {
+                BigDecimal subtotal = itemReq.getUnitPrice()
+                        .multiply(BigDecimal.valueOf(itemReq.getQuantity()));
+                itemEntities.add(PurchaseOrderItem.builder()
+                        .itemName(itemReq.getItemName())
+                        .quantity(itemReq.getQuantity())
+                        .unitPrice(itemReq.getUnitPrice())
+                        .subtotal(subtotal)
+                        .build());
+                totalAmount = totalAmount.add(subtotal);
+            }
+        } else {
+            if (request.getAmount() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Amount is required when no items are provided");
+            }
+            totalAmount = request.getAmount();
+        }
+
         PurchaseOrder po = PurchaseOrder.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .amount(request.getAmount())
+                .amount(totalAmount)
+                .category(request.getCategory())
+                .department(request.getDepartment())
+                .priority(request.getPriority() != null ? request.getPriority() : POPriority.NORMAL)
+                .justification(request.getJustification())
+                .vendor(request.getVendor())
+                .requiredDate(request.getRequiredDate())
+                .deliveryAddress(request.getDeliveryAddress())
+                .currency(request.getCurrency() != null ? request.getCurrency() : "IDR")
+                .budgetCode(request.getBudgetCode())
+                .paymentTerms(request.getPaymentTerms())
+                .notes(request.getNotes())
                 .createdBy(currentUser)
                 .build();
+
+        // Link items ke PO
+        for (PurchaseOrderItem item : itemEntities) {
+            item.setPurchaseOrder(po);
+            po.getItems().add(item);
+        }
 
         PurchaseOrder saved = purchaseOrderRepository.save(po);
         publishEvent(saved, currentUser.getUsername()); // notify manager ada PO baru
@@ -47,6 +100,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<PurchaseOrderResponse> getList(PurchaseOrderStatus status, int page, int size, String sortBy, User currentUser) {
 
         int safeSize = Math.min(size, MAX_PAGE_SIZE);
@@ -75,6 +129,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PurchaseOrderResponse getById(Long id, User currentUser) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase Order not found"));
@@ -152,12 +207,34 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     private PurchaseOrderResponse toResponse(PurchaseOrder po) {
+        List<PurchaseOrderItemResponse> itemResponses = po.getItems().stream()
+                .map(item -> PurchaseOrderItemResponse.builder()
+                        .id(item.getId())
+                        .itemName(item.getItemName())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .subtotal(item.getSubtotal())
+                        .build())
+                .toList();
+
         return PurchaseOrderResponse.builder()
                 .id(po.getId())
                 .title(po.getTitle())
                 .description(po.getDescription())
                 .amount(po.getAmount())
                 .status(po.getStatus())
+                .category(po.getCategory())
+                .department(po.getDepartment())
+                .priority(po.getPriority())
+                .justification(po.getJustification())
+                .vendor(po.getVendor())
+                .requiredDate(po.getRequiredDate())
+                .deliveryAddress(po.getDeliveryAddress())
+                .currency(po.getCurrency())
+                .budgetCode(po.getBudgetCode())
+                .paymentTerms(po.getPaymentTerms())
+                .notes(po.getNotes())
+                .items(itemResponses)
                 .createdByUsername(po.getCreatedBy().getUsername())
                 .createdAt(po.getCreatedAt())
                 .updatedAt(po.getUpdatedAt())
