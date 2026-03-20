@@ -17,5 +17,6 @@ public class PurchaseOrderEvent {
     private Long poId;
     private PurchaseOrderStatus newStatus;
     private String actorUsername;
+    private String requesterUsername; // username pemilik PO (createdBy)
     private LocalDateTime timestamp;
 }

@@ -42,6 +42,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 .build();
 
         PurchaseOrder saved = purchaseOrderRepository.save(po);
+        publishEvent(saved, currentUser.getUsername()); // notify manager ada PO baru
         return toResponse(saved);
     }
 
@@ -169,6 +170,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                         .poId(po.getId())
                         .newStatus(po.getStatus())
                         .actorUsername(actorUsername)
+                        .requesterUsername(po.getCreatedBy().getUsername())
                         .timestamp(LocalDateTime.now())
                         .build()
         );
