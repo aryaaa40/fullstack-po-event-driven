@@ -29,7 +29,20 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${manrope.variable} ${inter.variable} antialiased`}>
         {children}
-        <Toaster position="top-right" richColors />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: "#ffffff",
+              color: "#2a3439",
+              border: "1px solid rgba(42,52,57,0.1)",
+              boxShadow: "0 4px 20px rgba(42,52,57,0.08)",
+              borderRadius: "12px",
+              fontFamily: "var(--font-inter), Inter, sans-serif",
+              fontSize: "14px",
+            },
+          }}
+        />
       </body>
     </html>
   );

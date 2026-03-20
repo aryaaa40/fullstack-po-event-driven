@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { poRepository } from "@/lib/repositories/poRepository";
 import { PurchaseOrder, POStatus } from "@/types/po";
 import { Role } from "@/types/auth";
@@ -39,7 +40,22 @@ export default function POActionButtons({ po, role, onSuccess }: Props) {
     setError(null);
     setLoading(action);
     try {
-      await runAction(role, po.id, action);
+      const result = await runAction(role, po.id, action);
+      const now = new Date();
+      const label = action === "approve"
+        ? (role === "MANAGER" ? "Approved" : "Final Approved")
+        : (role === "MANAGER" ? "Rejected" : "Final Rejected");
+      toast.success(`PO #${String(result.id).padStart(3, "0")} — ${label}`, {
+        description: now.toLocaleDateString("id-ID", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        duration: 4000,
+      });
       onSuccess();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Action failed");
