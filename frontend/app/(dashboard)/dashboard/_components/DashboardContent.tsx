@@ -22,7 +22,7 @@ export default function DashboardContent() {
   return (
     <div className="flex flex-col gap-5">
       <WelcomeCard username={username ?? ""} role={role} pos={pos} />
-      <StatCards pos={pos} />
+      <StatCards pos={pos} role={role} />
       <POTable
         pos={pos}
         loading={loading}

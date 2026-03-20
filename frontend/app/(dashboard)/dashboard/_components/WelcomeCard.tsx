@@ -15,6 +15,12 @@ const ACTION_LABEL: Record<Role, string> = {
   FINANCE:   "purchase orders pending final approval",
 };
 
+const CHIP_LABEL: Record<Role, string> = {
+  REQUESTER: "MY PO OVERVIEW",
+  MANAGER:   "APPROVAL OVERVIEW",
+  FINANCE:   "FINANCE OVERVIEW",
+};
+
 interface Props {
   username: string;
   role: Role;
@@ -39,7 +45,7 @@ export default function WelcomeCard({ username, role, pos }: Props) {
           style={{ backgroundColor: "#eef2ff", color: "#0053db" }}
         >
           <Sparkles size={11} />
-          SYSTEM OVERVIEW
+          {CHIP_LABEL[role]}
         </div>
 
         {/* Headline */}

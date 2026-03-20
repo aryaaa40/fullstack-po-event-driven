@@ -9,19 +9,24 @@ interface GetPOsParams {
 }
 
 export const poRepository = {
-  getPOs: async (params: GetPOsParams = {}): Promise<PageResponse<PurchaseOrder>> => {
+  getPOs: async (
+    params: GetPOsParams = {},
+  ): Promise<PageResponse<PurchaseOrder>> => {
     const { status, page = 0, size = 50 } = params;
-    const query = new URLSearchParams({ page: String(page), size: String(size) });
+    const query = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+    });
     if (status) query.set("status", status);
     const res = await apiClient.get<ApiResponse<PageResponse<PurchaseOrder>>>(
-      `/api/v1/purchase-orders?${query}`
+      `/api/v1/purchase-orders?${query}`,
     );
     return res.data.data;
   },
 
   getById: async (id: number): Promise<PurchaseOrder> => {
     const res = await apiClient.get<ApiResponse<PurchaseOrder>>(
-      `/api/v1/purchase-orders/${id}`
+      `/api/v1/purchase-orders/${id}`,
     );
     return res.data.data;
   },
@@ -29,22 +34,21 @@ export const poRepository = {
   create: async (data: CreatePORequest): Promise<PurchaseOrder> => {
     const res = await apiClient.post<ApiResponse<PurchaseOrder>>(
       "/api/v1/purchase-orders",
-      data
+      data,
     );
     return res.data.data;
   },
 
-  // MANAGER actions
   approve: async (id: number): Promise<PurchaseOrder> => {
     const res = await apiClient.patch<ApiResponse<PurchaseOrder>>(
-      `/api/v1/purchase-orders/${id}/approve`
+      `/api/v1/purchase-orders/${id}/approve`,
     );
     return res.data.data;
   },
 
   reject: async (id: number): Promise<PurchaseOrder> => {
     const res = await apiClient.patch<ApiResponse<PurchaseOrder>>(
-      `/api/v1/purchase-orders/${id}/reject`
+      `/api/v1/purchase-orders/${id}/reject`,
     );
     return res.data.data;
   },
@@ -52,14 +56,14 @@ export const poRepository = {
   // FINANCE actions
   financeApprove: async (id: number): Promise<PurchaseOrder> => {
     const res = await apiClient.patch<ApiResponse<PurchaseOrder>>(
-      `/api/v1/purchase-orders/${id}/finance-approve`
+      `/api/v1/purchase-orders/${id}/finance-approve`,
     );
     return res.data.data;
   },
 
   financeReject: async (id: number): Promise<PurchaseOrder> => {
     const res = await apiClient.patch<ApiResponse<PurchaseOrder>>(
-      `/api/v1/purchase-orders/${id}/finance-reject`
+      `/api/v1/purchase-orders/${id}/finance-reject`,
     );
     return res.data.data;
   },

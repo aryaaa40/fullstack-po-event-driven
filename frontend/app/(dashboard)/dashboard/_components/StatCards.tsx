@@ -1,8 +1,17 @@
-import { DollarSign, CheckCircle2, XCircle } from "lucide-react";
+import {
+  DollarSign,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  TrendingUp,
+  BarChart3,
+} from "lucide-react";
 import { PurchaseOrder } from "@/types/po";
+import { Role } from "@/types/auth";
 
 interface Props {
   pos: PurchaseOrder[];
+  role: Role;
 }
 
 interface StatCardProps {
@@ -62,25 +71,28 @@ function StatCard({
   );
 }
 
-export default function StatCards({ pos }: Props) {
+function formatRp(amount: number) {
+  return `Rp ${amount.toLocaleString("id-ID")}`;
+}
+
+function RequesterStats({ pos }: { pos: PurchaseOrder[] }) {
   const totalSpent = pos
     .filter((p) => p.status === "FINANCE_APPROVED")
     .reduce((sum, p) => sum + p.amount, 0);
-
   const approvedCount = pos.filter(
     (p) => p.status === "FINANCE_APPROVED",
   ).length;
   const rejectedCount = pos.filter((p) => p.status === "REJECTED").length;
-  const pendingCount = pos.filter(
+  const inProgressCount = pos.filter(
     (p) => p.status === "PENDING" || p.status === "MANAGER_APPROVED",
   ).length;
 
   return (
-    <div className="flex gap-4">
+    <>
       <StatCard
         label="TOTAL SPENT (MTD)"
-        value={`$${totalSpent.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-        sub={`${pendingCount} In Progress`}
+        value={formatRp(totalSpent)}
+        sub={`${inProgressCount} In Progress`}
         Icon={DollarSign}
         iconBg="#eef2ff"
         iconColor="#0053db"
@@ -101,6 +113,88 @@ export default function StatCards({ pos }: Props) {
         iconBg="#fff7f6"
         iconColor="#9f403d"
       />
+    </>
+  );
+}
+
+function ManagerStats({ pos }: { pos: PurchaseOrder[] }) {
+  const awaitingCount = pos.length;
+  const totalValue = pos.reduce((sum, p) => sum + p.amount, 0);
+  const avgValue =
+    awaitingCount > 0 ? Math.round(totalValue / awaitingCount) : 0;
+
+  return (
+    <>
+      <StatCard
+        label="AWAITING YOUR REVIEW"
+        value={String(awaitingCount)}
+        sub="Needs Action"
+        Icon={Clock}
+        iconBg="#eef2ff"
+        iconColor="#0053db"
+      />
+      <StatCard
+        label="TOTAL VALUE AT STAKE"
+        value={formatRp(totalValue)}
+        sub="Combined Pending"
+        Icon={TrendingUp}
+        iconBg="#f3eeff"
+        iconColor="#6750A4"
+      />
+      <StatCard
+        label="AVERAGE PO VALUE"
+        value={formatRp(avgValue)}
+        sub="Per Request"
+        Icon={BarChart3}
+        iconBg="#e6ffee"
+        iconColor="#006d4a"
+      />
+    </>
+  );
+}
+
+function FinanceStats({ pos }: { pos: PurchaseOrder[] }) {
+  const readyCount = pos.length;
+  const totalCommitment = pos.reduce((sum, p) => sum + p.amount, 0);
+  const avgValue =
+    readyCount > 0 ? Math.round(totalCommitment / readyCount) : 0;
+
+  return (
+    <>
+      <StatCard
+        label="READY FOR APPROVAL"
+        value={String(readyCount)}
+        sub="Manager Approved"
+        Icon={CheckCircle2}
+        iconBg="#e6ffee"
+        iconColor="#006d4a"
+      />
+      <StatCard
+        label="TOTAL COMMITMENT"
+        value={formatRp(totalCommitment)}
+        sub="Awaiting Final Sign Off"
+        Icon={DollarSign}
+        iconBg="#eef2ff"
+        iconColor="#0053db"
+      />
+      <StatCard
+        label="AVERAGE VALUE"
+        value={formatRp(avgValue)}
+        sub="Per Order"
+        Icon={BarChart3}
+        iconBg="#f3eeff"
+        iconColor="#6750A4"
+      />
+    </>
+  );
+}
+
+export default function StatCards({ pos, role }: Props) {
+  return (
+    <div className="flex gap-4">
+      {role === "REQUESTER" && <RequesterStats pos={pos} />}
+      {role === "MANAGER" && <ManagerStats pos={pos} />}
+      {role === "FINANCE" && <FinanceStats pos={pos} />}
     </div>
   );
 }
