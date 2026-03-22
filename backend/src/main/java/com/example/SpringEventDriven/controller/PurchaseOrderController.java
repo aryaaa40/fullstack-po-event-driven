@@ -10,12 +10,15 @@ import com.example.SpringEventDriven.entity.POPriority;
 import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
 import com.example.SpringEventDriven.entity.User;
 import com.example.SpringEventDriven.service.ApprovalHistoryService;
+import com.example.SpringEventDriven.service.POPdfService;
 import com.example.SpringEventDriven.service.PurchaseOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,6 +35,7 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
     private final ApprovalHistoryService approvalHistoryService;
+    private final POPdfService poPdfService;
 
     @PostMapping
     @PreAuthorize("hasRole('REQUESTER')")
@@ -121,6 +125,24 @@ public class PurchaseOrderController {
 
         List<ApprovalHistoryResponse> result = approvalHistoryService.getHistoryByPoId(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success(200, "Approval history retrieved successfully", result));
+    }
+
+    @GetMapping("/{id}/export")
+    @PreAuthorize("hasAnyRole('REQUESTER', 'MANAGER', 'FINANCE')")
+    public ResponseEntity<byte[]> exportPdf(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+
+        // Gunakan getById untuk access control — REQUESTER hanya bisa export PO miliknya
+        purchaseOrderService.getById(id, currentUser);
+
+        byte[] pdf = poPdfService.generate(id);
+        String filename = "PO-" + String.format("%05d", id) + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
 }
