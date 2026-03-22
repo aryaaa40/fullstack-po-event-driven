@@ -13,6 +13,7 @@ public class RabbitMQConfig {
 
     public static final String EXCHANGE_NAME = "po.exchange";
     public static final String QUEUE_NAME = "po-events-queue";
+    public static final String HISTORY_QUEUE_NAME = "po-history-queue";
     public static final String ROUTING_KEY = "po.status.#";
 
     @Bean
@@ -29,6 +30,23 @@ public class RabbitMQConfig {
     public Binding poBinding(Queue poEventsQueue, TopicExchange poExchange) {
         return BindingBuilder
                 .bind(poEventsQueue)
+                .to(poExchange)
+                .with(ROUTING_KEY);
+    }
+
+    // Queue terpisah untuk audit trail — menerima event yang sama dari exchange yang sama
+    // Kenapa perlu queue baru? Karena di RabbitMQ, 1 queue = competing consumers.
+    // Kalau 2 listener pakai queue yang sama, hanya 1 yang dapat message.
+    // Dengan 2 queue berbeda binding ke exchange yang sama, keduanya dapat copy event-nya.
+    @Bean
+    public Queue poHistoryQueue() {
+        return new Queue(HISTORY_QUEUE_NAME, true);
+    }
+
+    @Bean
+    public Binding poHistoryBinding(Queue poHistoryQueue, TopicExchange poExchange) {
+        return BindingBuilder
+                .bind(poHistoryQueue)
                 .to(poExchange)
                 .with(ROUTING_KEY);
     }

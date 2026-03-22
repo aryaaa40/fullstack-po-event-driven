@@ -2,10 +2,12 @@ package com.example.SpringEventDriven.controller;
 
 import com.example.SpringEventDriven.dto.request.CreatePurchaseOrderRequest;
 import com.example.SpringEventDriven.dto.response.ApiResponse;
+import com.example.SpringEventDriven.dto.response.ApprovalHistoryResponse;
 import com.example.SpringEventDriven.dto.response.PageResponse;
 import com.example.SpringEventDriven.dto.response.PurchaseOrderResponse;
 import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
 import com.example.SpringEventDriven.entity.User;
+import com.example.SpringEventDriven.service.ApprovalHistoryService;
 import com.example.SpringEventDriven.service.PurchaseOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +18,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/purchase-orders")
 @RequiredArgsConstructor
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+    private final ApprovalHistoryService approvalHistoryService;
 
     @PostMapping
     @PreAuthorize("hasRole('REQUESTER')")
@@ -95,6 +100,16 @@ public class PurchaseOrderController {
 
         PurchaseOrderResponse result = purchaseOrderService.financeReject(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success(200, "Purchase order rejected by finance", result));
+    }
+
+    @GetMapping("/{id}/history")
+    @PreAuthorize("hasAnyRole('REQUESTER', 'MANAGER', 'FINANCE')")
+    public ResponseEntity<ApiResponse<List<ApprovalHistoryResponse>>> getHistory(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+
+        List<ApprovalHistoryResponse> result = approvalHistoryService.getHistoryByPoId(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(200, "Approval history retrieved successfully", result));
     }
 
 }

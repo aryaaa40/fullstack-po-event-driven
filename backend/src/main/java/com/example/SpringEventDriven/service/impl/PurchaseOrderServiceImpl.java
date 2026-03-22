@@ -95,7 +95,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         }
 
         PurchaseOrder saved = purchaseOrderRepository.save(po);
-        publishEvent(saved, currentUser.getUsername()); // notify manager ada PO baru
+        publishEvent(saved, currentUser.getUsername(), null); // fromStatus null = baru dibuat
         return toResponse(saved);
     }
 
@@ -154,7 +154,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         po.setStatus(PurchaseOrderStatus.MANAGER_APPROVED);
         PurchaseOrder saved = purchaseOrderRepository.save(po);
-        publishEvent(saved, currentUser.getUsername());
+        publishEvent(saved, currentUser.getUsername(), PurchaseOrderStatus.PENDING);
         return toResponse(saved);
     }
 
@@ -170,7 +170,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         po.setStatus(PurchaseOrderStatus.REJECTED);
         PurchaseOrder saved = purchaseOrderRepository.save(po);
-        publishEvent(saved, currentUser.getUsername());
+        publishEvent(saved, currentUser.getUsername(), PurchaseOrderStatus.PENDING);
         return toResponse(saved);
     }
 
@@ -186,7 +186,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         po.setStatus(PurchaseOrderStatus.FINANCE_APPROVED);
         PurchaseOrder saved = purchaseOrderRepository.save(po);
-        publishEvent(saved, currentUser.getUsername());
+        publishEvent(saved, currentUser.getUsername(), PurchaseOrderStatus.MANAGER_APPROVED);
         return toResponse(saved);
     }
 
@@ -202,7 +202,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         po.setStatus(PurchaseOrderStatus.REJECTED);
         PurchaseOrder saved = purchaseOrderRepository.save(po);
-        publishEvent(saved, currentUser.getUsername());
+        publishEvent(saved, currentUser.getUsername(), PurchaseOrderStatus.MANAGER_APPROVED);
         return toResponse(saved);
     }
 
@@ -241,10 +241,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 .build();
     }
 
-    private void publishEvent(PurchaseOrder po, String actorUsername) {
+    private void publishEvent(PurchaseOrder po, String actorUsername, PurchaseOrderStatus fromStatus) {
         eventPublisher.publishStatusChanged(
                 PurchaseOrderEvent.builder()
                         .poId(po.getId())
+                        .fromStatus(fromStatus)
                         .newStatus(po.getStatus())
                         .actorUsername(actorUsername)
                         .requesterUsername(po.getCreatedBy().getUsername())
