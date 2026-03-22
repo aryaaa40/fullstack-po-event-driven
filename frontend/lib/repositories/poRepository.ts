@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { PurchaseOrder, CreatePORequest, POStatus } from "@/types/po";
+import { PurchaseOrder, CreatePORequest, POStatus, ApprovalHistory } from "@/types/po";
 import { ApiResponse, PageResponse } from "@/types/common";
 
 interface GetPOsParams {
@@ -64,6 +64,13 @@ export const poRepository = {
   financeReject: async (id: number): Promise<PurchaseOrder> => {
     const res = await apiClient.patch<ApiResponse<PurchaseOrder>>(
       `/api/v1/purchase-orders/${id}/finance-reject`,
+    );
+    return res.data.data;
+  },
+
+  getHistory: async (id: number): Promise<ApprovalHistory[]> => {
+    const res = await apiClient.get<ApiResponse<ApprovalHistory[]>>(
+      `/api/v1/purchase-orders/${id}/history`,
     );
     return res.data.data;
   },

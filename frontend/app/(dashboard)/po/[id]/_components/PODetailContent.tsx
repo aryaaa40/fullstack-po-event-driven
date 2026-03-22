@@ -8,6 +8,7 @@ import PODetailCard from "./PODetailCard";
 import PODetailItemsTable from "./PODetailItemsTable";
 import PODetailExtras from "./PODetailExtras";
 import POActionButtons from "./POActionButtons";
+import POTimeline from "./POTimeline";
 
 export default function PODetailContent({ id }: { id: number }) {
   const role = useAuthStore((s) => s.role);
@@ -59,6 +60,7 @@ export default function PODetailContent({ id }: { id: number }) {
               <PODetailItemsTable items={po.items} totalAmount={po.amount} />
             )}
             <PODetailExtras po={po} />
+            <POTimeline poId={po.id} />
           </div>
 
           {/* Right — action panel */}

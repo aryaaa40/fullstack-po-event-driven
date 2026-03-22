@@ -26,14 +26,42 @@ const PAGE_CONFIG = {
   },
 } as const;
 
-const STATUS_STYLE: Record<POStatus, { bg: string; activeBg: string; color: string; label: string }> = {
-  PENDING:          { bg: "#eef4ff", activeBg: "#0053db", color: "#0053db", label: "Pending" },
-  MANAGER_APPROVED: { bg: "#f3eeff", activeBg: "#6750A4", color: "#6750A4", label: "Mgr Approved" },
-  FINANCE_APPROVED: { bg: "#e6ffee", activeBg: "#006d4a", color: "#006d4a", label: "Approved" },
-  REJECTED:         { bg: "#fff7f6", activeBg: "#9f403d", color: "#9f403d", label: "Rejected" },
+const STATUS_STYLE: Record<
+  POStatus,
+  { bg: string; activeBg: string; color: string; label: string }
+> = {
+  PENDING: {
+    bg: "#eef4ff",
+    activeBg: "#0053db",
+    color: "#0053db",
+    label: "Pending",
+  },
+  MANAGER_APPROVED: {
+    bg: "#f3eeff",
+    activeBg: "#6750A4",
+    color: "#6750A4",
+    label: "Manager Approved",
+  },
+  FINANCE_APPROVED: {
+    bg: "#e6ffee",
+    activeBg: "#006d4a",
+    color: "#006d4a",
+    label: "Approved",
+  },
+  REJECTED: {
+    bg: "#fff7f6",
+    activeBg: "#9f403d",
+    color: "#9f403d",
+    label: "Rejected",
+  },
 };
 
-const STATUSES = ["PENDING", "MANAGER_APPROVED", "FINANCE_APPROVED", "REJECTED"] as const;
+const STATUSES = [
+  "PENDING",
+  "MANAGER_APPROVED",
+  "FINANCE_APPROVED",
+  "REJECTED",
+] as const;
 
 export default function POListContent() {
   const role = useAuthStore((s) => s.role);
@@ -50,7 +78,9 @@ export default function POListContent() {
 
   const config = role ? PAGE_CONFIG[role] : PAGE_CONFIG.REQUESTER;
 
-  const filteredPos = activeFilter ? pos.filter((p) => p.status === activeFilter) : pos;
+  const filteredPos = activeFilter
+    ? pos.filter((p) => p.status === activeFilter)
+    : pos;
 
   function toggleFilter(status: POStatus) {
     setActiveFilter((prev) => (prev === status ? null : status));
@@ -84,7 +114,11 @@ export default function POListContent() {
           <Link
             href="/po/new"
             className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
+            style={{
+              backgroundColor: "#0053db",
+              color: "#f8f7ff",
+              fontFamily: FONT_MANROPE,
+            }}
           >
             <Plus size={16} strokeWidth={2.5} />
             New PO
@@ -108,7 +142,8 @@ export default function POListContent() {
             <span
               className="flex h-5 w-5 items-center justify-center rounded-md text-xs font-bold"
               style={{
-                backgroundColor: activeFilter === null ? "rgba(255,255,255,0.2)" : "#d9e4ea",
+                backgroundColor:
+                  activeFilter === null ? "rgba(255,255,255,0.2)" : "#d9e4ea",
                 color: activeFilter === null ? "#ffffff" : "#2a3439",
               }}
             >
@@ -139,7 +174,9 @@ export default function POListContent() {
                 <span
                   className="flex h-5 w-5 items-center justify-center rounded-md text-xs font-bold"
                   style={{
-                    backgroundColor: isActive ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.08)",
+                    backgroundColor: isActive
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(0,0,0,0.08)",
                     color: isActive ? "#ffffff" : s.color,
                   }}
                 >

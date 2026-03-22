@@ -48,6 +48,17 @@ export interface PurchaseOrder {
   items: PurchaseOrderItem[];
 }
 
+export interface ApprovalHistory {
+  id: number;
+  poId: number;
+  poTitle: string;
+  actorUsername: string;
+  fromStatus: POStatus | null; // null = PO baru dibuat
+  toStatus: POStatus;
+  createdAt: string;
+  notes: string | null;
+}
+
 export interface CreatePurchaseOrderItemRequest {
   itemName: string;
   quantity: number;

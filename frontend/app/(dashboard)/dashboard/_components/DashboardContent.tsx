@@ -5,9 +5,11 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { useDashboardPOs } from "@/lib/hooks/useDashboardPOs";
 import { usePONotification } from "@/lib/hooks/usePONotification";
 import { Role } from "@/types/auth";
+import { useRecentActivity } from "@/lib/hooks/useRecentActivity";
 import WelcomeCard from "./WelcomeCard";
 import StatCards from "./StatCards";
 import POTable from "./POTable";
+import RecentActivity from "./RecentActivity";
 
 const TABLE_TITLE: Record<Role, string> = {
   REQUESTER: "My Purchase Orders",
@@ -19,13 +21,15 @@ export default function DashboardContent() {
   const { username, role } = useAuthStore();
   const { pos, loading, error, refetch } = useDashboardPOs();
   const { notifications } = usePONotification();
+  const { activities, loading: actLoading, refetch: refetchActivity } = useRecentActivity();
 
-  // Auto-refetch tabel saat ada event WebSocket masuk
+  // Auto-refetch tabel dan recent activity saat ada event WebSocket masuk
   useEffect(() => {
     if (notifications.length > 0) {
       refetch();
+      refetchActivity();
     }
-  }, [notifications.length, refetch]);
+  }, [notifications.length, refetch, refetchActivity]);
 
   if (!role) return null;
 
@@ -39,6 +43,7 @@ export default function DashboardContent() {
         error={error}
         title={TABLE_TITLE[role]}
       />
+      <RecentActivity activities={activities} loading={actLoading} />
     </div>
   );
 }
