@@ -5,6 +5,8 @@ import com.example.SpringEventDriven.dto.response.ApiResponse;
 import com.example.SpringEventDriven.dto.response.ApprovalHistoryResponse;
 import com.example.SpringEventDriven.dto.response.PageResponse;
 import com.example.SpringEventDriven.dto.response.PurchaseOrderResponse;
+import com.example.SpringEventDriven.entity.POCategory;
+import com.example.SpringEventDriven.entity.POPriority;
 import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
 import com.example.SpringEventDriven.entity.User;
 import com.example.SpringEventDriven.service.ApprovalHistoryService;
@@ -12,11 +14,14 @@ import com.example.SpringEventDriven.service.PurchaseOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 import java.util.List;
 
@@ -43,12 +48,18 @@ public class PurchaseOrderController {
     @PreAuthorize("hasAnyRole('REQUESTER', 'MANAGER', 'FINANCE')")
     public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderResponse>>> getList(
             @RequestParam(required = false) PurchaseOrderStatus status,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) POCategory category,
+            @RequestParam(required = false) POPriority priority,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @AuthenticationPrincipal User currentUser) {
 
-        Page<PurchaseOrderResponse> result = purchaseOrderService.getList(status, page, size, sortBy, currentUser);
+        Page<PurchaseOrderResponse> result = purchaseOrderService.getList(
+                status, search, category, priority, dateFrom, dateTo, page, size, sortBy, currentUser);
         return ResponseEntity.ok(ApiResponse.success(200, "Purchase orders retrieved successfully", PageResponse.of(result)));
     }
 

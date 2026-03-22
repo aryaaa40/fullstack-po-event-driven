@@ -4,6 +4,7 @@ import com.example.SpringEventDriven.dto.request.CreatePurchaseOrderItemRequest;
 import com.example.SpringEventDriven.dto.request.CreatePurchaseOrderRequest;
 import com.example.SpringEventDriven.dto.response.PurchaseOrderItemResponse;
 import com.example.SpringEventDriven.dto.response.PurchaseOrderResponse;
+import com.example.SpringEventDriven.entity.POCategory;
 import com.example.SpringEventDriven.entity.POPriority;
 import com.example.SpringEventDriven.entity.PurchaseOrder;
 import com.example.SpringEventDriven.entity.PurchaseOrderItem;
@@ -14,17 +15,20 @@ import com.example.SpringEventDriven.event.PurchaseOrderEvent;
 import com.example.SpringEventDriven.repository.PurchaseOrderRepository;
 import com.example.SpringEventDriven.service.PurchaseOrderEventPublisher;
 import com.example.SpringEventDriven.service.PurchaseOrderService;
+import com.example.SpringEventDriven.specification.PurchaseOrderSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +105,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<PurchaseOrderResponse> getList(PurchaseOrderStatus status, int page, int size, String sortBy, User currentUser) {
+    public Page<PurchaseOrderResponse> getList(
+            PurchaseOrderStatus status,
+            String search,
+            POCategory category,
+            POPriority priority,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            int page, int size, String sortBy,
+            User currentUser) {
 
         int safeSize = Math.min(size, MAX_PAGE_SIZE);
         String safeSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "createdAt";
@@ -109,23 +121,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         boolean isRequester = currentUser.getRole() == Role.REQUESTER;
 
-        if (isRequester && status != null) {
-            return purchaseOrderRepository
-                    .findByCreatedBy_IdAndStatus(currentUser.getId(), status, pageable)
-                    .map(this::toResponse);
-        } else if (isRequester) {
-            return purchaseOrderRepository
-                    .findByCreatedBy_Id(currentUser.getId(), pageable)
-                    .map(this::toResponse);
-        } else if (status != null) {
-            return purchaseOrderRepository
-                    .findByStatus(status, pageable)
-                    .map(this::toResponse);
-        } else {
-            return purchaseOrderRepository
-                    .findAll(pageable)
-                    .map(this::toResponse);
-        }
+        Specification<PurchaseOrder> spec = PurchaseOrderSpecification.withFilters(
+                search, status, category, priority, dateFrom, dateTo,
+                isRequester, currentUser.getId()
+        );
+
+        return purchaseOrderRepository.findAll(spec, pageable).map(this::toResponse);
     }
 
     @Override
