@@ -8,6 +8,7 @@ import { usePOList } from "@/lib/hooks/usePOList";
 import { usePONotification } from "@/lib/hooks/usePONotification";
 import { POStatus } from "@/types/po";
 import POTable from "@/app/(dashboard)/dashboard/_components/POTable";
+import POFilterBar, { POFilters } from "./POFilterBar";
 
 const FONT_MANROPE = "var(--font-manrope), Manrope, sans-serif";
 
@@ -63,13 +64,23 @@ const STATUSES = [
   "REJECTED",
 ] as const;
 
+const EMPTY_FILTERS: POFilters = { search: "", category: "", priority: "" };
+
 export default function POListContent() {
   const role = useAuthStore((s) => s.role);
-  const { pos, loading, error, refetch } = usePOList();
-  const { notifications } = usePONotification();
-  const [activeFilter, setActiveFilter] = useState<POStatus | null>(null);
+  const [activeStatus, setActiveStatus] = useState<POStatus | null>(null);
+  const [filters, setFilters] = useState<POFilters>(EMPTY_FILTERS);
 
-  // Auto-refetch tabel saat ada event WebSocket masuk
+  const { pos, totalElements, loading, error, refetch } = usePOList({
+    status: activeStatus ?? undefined,
+    search: filters.search || undefined,
+    category: filters.category || undefined,
+    priority: filters.priority || undefined,
+  });
+
+  const { notifications } = usePONotification();
+
+  // Auto-refetch saat ada event WebSocket masuk
   useEffect(() => {
     if (notifications.length > 0) {
       refetch();
@@ -78,13 +89,12 @@ export default function POListContent() {
 
   const config = role ? PAGE_CONFIG[role] : PAGE_CONFIG.REQUESTER;
 
-  const filteredPos = activeFilter
-    ? pos.filter((p) => p.status === activeFilter)
-    : pos;
-
-  function toggleFilter(status: POStatus) {
-    setActiveFilter((prev) => (prev === status ? null : status));
+  function toggleStatus(status: POStatus) {
+    setActiveStatus((prev) => (prev === status ? null : status));
   }
+
+  const hasActiveFilter =
+    activeStatus || filters.search || filters.category || filters.priority;
 
   return (
     <div className="flex flex-col gap-6">
@@ -126,77 +136,75 @@ export default function POListContent() {
         )}
       </div>
 
-      {/* Filter chips */}
-      {!loading && !error && (
-        <div className="flex flex-wrap gap-2.5">
-          {/* All chip */}
-          <button
-            onClick={() => setActiveFilter(null)}
-            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all"
-            style={{
-              backgroundColor: activeFilter === null ? "#2a3439" : "#f0f4f7",
-              color: activeFilter === null ? "#ffffff" : "#566166",
-              fontFamily: FONT_MANROPE,
-            }}
-          >
+      {/* Search & Filter bar */}
+      <POFilterBar filters={filters} onChange={setFilters} />
+
+      {/* Status filter chips */}
+      <div className="flex flex-wrap gap-2.5">
+        {/* All chip */}
+        <button
+          onClick={() => setActiveStatus(null)}
+          className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all"
+          style={{
+            backgroundColor: activeStatus === null ? "#2a3439" : "#f0f4f7",
+            color: activeStatus === null ? "#ffffff" : "#566166",
+            fontFamily: FONT_MANROPE,
+          }}
+        >
+          {!loading && (
             <span
               className="flex h-5 w-5 items-center justify-center rounded-md text-xs font-bold"
               style={{
                 backgroundColor:
-                  activeFilter === null ? "rgba(255,255,255,0.2)" : "#d9e4ea",
-                color: activeFilter === null ? "#ffffff" : "#2a3439",
+                  activeStatus === null ? "rgba(255,255,255,0.2)" : "#d9e4ea",
+                color: activeStatus === null ? "#ffffff" : "#2a3439",
               }}
             >
-              {pos.length}
+              {totalElements > 99 ? "99+" : totalElements}
             </span>
-            All
-          </button>
+          )}
+          All
+        </button>
 
-          {/* Status chips */}
-          {STATUSES.map((status) => {
-            const count = pos.filter((p) => p.status === status).length;
-            const s = STATUS_STYLE[status];
-            const isActive = activeFilter === status;
-            return (
-              <button
-                key={status}
-                onClick={() => toggleFilter(status)}
-                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all"
-                style={{
-                  backgroundColor: isActive ? s.activeBg : s.bg,
-                  color: isActive ? "#ffffff" : s.color,
-                  fontFamily: FONT_MANROPE,
-                  opacity: count === 0 ? 0.45 : 1,
-                  cursor: count === 0 ? "default" : "pointer",
-                }}
-                disabled={count === 0}
-              >
-                <span
-                  className="flex h-5 w-5 items-center justify-center rounded-md text-xs font-bold"
-                  style={{
-                    backgroundColor: isActive
-                      ? "rgba(255,255,255,0.2)"
-                      : "rgba(0,0,0,0.08)",
-                    color: isActive ? "#ffffff" : s.color,
-                  }}
-                >
-                  {count}
-                </span>
-                {s.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
+        {/* Status chips */}
+        {STATUSES.map((status) => {
+          const s = STATUS_STYLE[status];
+          const isActive = activeStatus === status;
+          return (
+            <button
+              key={status}
+              onClick={() => toggleStatus(status)}
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold transition-all"
+              style={{
+                backgroundColor: isActive ? s.activeBg : s.bg,
+                color: isActive ? "#ffffff" : s.color,
+                fontFamily: FONT_MANROPE,
+              }}
+            >
+              {s.label}
+            </button>
+          );
+        })}
+
+        {/* Clear all filters indicator */}
+        {hasActiveFilter && !loading && (
+          <span
+            className="flex items-center rounded-xl px-3 py-2.5 text-xs font-medium"
+            style={{ color: "#566166" }}
+          >
+            {totalElements} result{totalElements !== 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
 
       {/* Table */}
       <POTable
-        pos={filteredPos}
+        pos={pos}
         loading={loading}
         error={error}
         title={
-          activeFilter
-            ? `${STATUS_STYLE[activeFilter].label} — ${filteredPos.length} order${filteredPos.length !== 1 ? "s" : ""}`
+          activeStatus
+            ? `${STATUS_STYLE[activeStatus].label} — ${totalElements} order${totalElements !== 1 ? "s" : ""}`
             : config.title
         }
       />

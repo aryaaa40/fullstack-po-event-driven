@@ -1,23 +1,35 @@
 import { apiClient } from "@/lib/api-client";
-import { PurchaseOrder, CreatePORequest, POStatus, ApprovalHistory } from "@/types/po";
+import { PurchaseOrder, CreatePORequest, POStatus, POCategory, POPriority, ApprovalHistory } from "@/types/po";
 import { ApiResponse, PageResponse } from "@/types/common";
 
-interface GetPOsParams {
+export interface GetPOsParams {
   status?: POStatus;
+  search?: string;
+  category?: POCategory;
+  priority?: POPriority;
+  dateFrom?: string; // format: YYYY-MM-DD
+  dateTo?: string;   // format: YYYY-MM-DD
   page?: number;
   size?: number;
+  sortBy?: string;
 }
 
 export const poRepository = {
   getPOs: async (
     params: GetPOsParams = {},
   ): Promise<PageResponse<PurchaseOrder>> => {
-    const { status, page = 0, size = 50 } = params;
+    const { status, search, category, priority, dateFrom, dateTo, page = 0, size = 50, sortBy } = params;
     const query = new URLSearchParams({
       page: String(page),
       size: String(size),
     });
     if (status) query.set("status", status);
+    if (search && search.trim()) query.set("search", search.trim());
+    if (category) query.set("category", category);
+    if (priority) query.set("priority", priority);
+    if (dateFrom) query.set("dateFrom", dateFrom);
+    if (dateTo) query.set("dateTo", dateTo);
+    if (sortBy) query.set("sortBy", sortBy);
     const res = await apiClient.get<ApiResponse<PageResponse<PurchaseOrder>>>(
       `/api/v1/purchase-orders?${query}`,
     );
