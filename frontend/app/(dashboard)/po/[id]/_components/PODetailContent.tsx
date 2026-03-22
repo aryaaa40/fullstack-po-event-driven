@@ -1,18 +1,38 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Download } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { usePODetail } from "@/lib/hooks/usePODetail";
+import { poRepository } from "@/lib/repositories/poRepository";
 import PODetailCard from "./PODetailCard";
 import PODetailItemsTable from "./PODetailItemsTable";
 import PODetailExtras from "./PODetailExtras";
 import POActionButtons from "./POActionButtons";
 import POTimeline from "./POTimeline";
 
+const FONT_MANROPE = "var(--font-manrope), Manrope, sans-serif";
+
 export default function PODetailContent({ id }: { id: number }) {
   const role = useAuthStore((s) => s.role);
   const { po, loading, error, refetch } = usePODetail(id);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExportPdf() {
+    setExporting(true);
+    try {
+      const blob = await poRepository.exportPdf(id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `PO-${String(id).padStart(5, "0")}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -69,6 +89,21 @@ export default function PODetailContent({ id }: { id: number }) {
               <POActionButtons po={po} role={role} onSuccess={refetch} />
             )}
 
+            {/* Export PDF */}
+            <button
+              onClick={handleExportPdf}
+              disabled={exporting}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50 cursor-pointer"
+              style={{
+                backgroundColor: "#f0f4f7",
+                color: "#2a3439",
+                fontFamily: FONT_MANROPE,
+              }}
+            >
+              <Download size={15} />
+              {exporting ? "Generating..." : "Export PDF"}
+            </button>
+
             {/* Status widget */}
             <div
               className="rounded-2xl p-6"
@@ -86,7 +121,10 @@ export default function PODetailContent({ id }: { id: number }) {
               >
                 Status
               </h2>
-              <p className="mt-2 text-xs leading-relaxed" style={{ color: "#566166" }}>
+              <p
+                className="mt-2 text-xs leading-relaxed"
+                style={{ color: "#566166" }}
+              >
                 This PO is currently{" "}
                 <span className="font-semibold" style={{ color: "#2a3439" }}>
                   {po.status.replace(/_/g, " ")}

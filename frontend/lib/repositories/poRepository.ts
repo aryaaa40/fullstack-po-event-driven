@@ -86,4 +86,11 @@ export const poRepository = {
     );
     return res.data.data;
   },
+
+  exportPdf: async (id: number): Promise<Blob> => {
+    const res = await apiClient.get(`/api/v1/purchase-orders/${id}/export`, {
+      responseType: "blob",
+    });
+    return res.data as Blob;
+  },
 };
