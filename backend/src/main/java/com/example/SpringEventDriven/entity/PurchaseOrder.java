@@ -47,8 +47,9 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private POCategory category;
 
-    @Column(nullable = false)
-    private String department;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", nullable = false)
+    private Department department;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

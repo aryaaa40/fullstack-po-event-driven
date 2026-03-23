@@ -39,6 +39,11 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    // Nullable — FINANCE tidak punya department (cross-department)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

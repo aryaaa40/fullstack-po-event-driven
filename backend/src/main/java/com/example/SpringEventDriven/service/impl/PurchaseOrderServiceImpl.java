@@ -2,8 +2,10 @@ package com.example.SpringEventDriven.service.impl;
 
 import com.example.SpringEventDriven.dto.request.CreatePurchaseOrderItemRequest;
 import com.example.SpringEventDriven.dto.request.CreatePurchaseOrderRequest;
+import com.example.SpringEventDriven.dto.response.DepartmentResponse;
 import com.example.SpringEventDriven.dto.response.PurchaseOrderItemResponse;
 import com.example.SpringEventDriven.dto.response.PurchaseOrderResponse;
+import com.example.SpringEventDriven.entity.Department;
 import com.example.SpringEventDriven.entity.POCategory;
 import com.example.SpringEventDriven.entity.POPriority;
 import com.example.SpringEventDriven.entity.PurchaseOrder;
@@ -12,6 +14,7 @@ import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
 import com.example.SpringEventDriven.entity.Role;
 import com.example.SpringEventDriven.entity.User;
 import com.example.SpringEventDriven.event.PurchaseOrderEvent;
+import com.example.SpringEventDriven.repository.DepartmentRepository;
 import com.example.SpringEventDriven.repository.PurchaseOrderRepository;
 import com.example.SpringEventDriven.service.PurchaseOrderEventPublisher;
 import com.example.SpringEventDriven.service.PurchaseOrderService;
@@ -40,6 +43,7 @@ import java.util.Set;
 public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
+    private final DepartmentRepository departmentRepository;
     private final PurchaseOrderEventPublisher eventPublisher;
 
     private static final int MAX_PAGE_SIZE = 50;
@@ -74,12 +78,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
             totalAmount = request.getAmount();
         }
 
+        Department department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
+
         PurchaseOrder po = PurchaseOrder.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .amount(totalAmount)
                 .category(request.getCategory())
-                .department(request.getDepartment())
+                .department(department)
                 .priority(request.getPriority() != null ? request.getPriority() : POPriority.NORMAL)
                 .justification(request.getJustification())
                 .vendor(request.getVendor())
@@ -120,10 +127,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         Pageable pageable = PageRequest.of(page, safeSize, Sort.by(Sort.Direction.DESC, safeSortBy));
 
         boolean isRequester = currentUser.getRole() == Role.REQUESTER;
+        boolean isManager   = currentUser.getRole() == Role.MANAGER;
+
+        Long filterByUserId = isRequester ? currentUser.getId() : null;
+        Long filterByDeptId = isManager && currentUser.getDepartment() != null
+                ? currentUser.getDepartment().getId() : null;
 
         Specification<PurchaseOrder> spec = PurchaseOrderSpecification.withFilters(
                 search, status, category, priority, dateFrom, dateTo,
-                isRequester, currentUser.getId()
+                isRequester, filterByUserId, filterByDeptId
         );
 
         return purchaseOrderRepository.findAll(spec, pageable).map(this::toResponse);
@@ -152,6 +164,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Only PENDING purchase orders can be approved by manager");
         }
+        validateManagerDepartment(po, currentUser);
 
         po.setStatus(PurchaseOrderStatus.MANAGER_APPROVED);
         PurchaseOrder saved = purchaseOrderRepository.save(po);
@@ -168,6 +181,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Only PENDING purchase orders can be rejected by manager");
         }
+        validateManagerDepartment(po, currentUser);
 
         po.setStatus(PurchaseOrderStatus.REJECTED);
         PurchaseOrder saved = purchaseOrderRepository.save(po);
@@ -207,6 +221,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         return toResponse(saved);
     }
 
+    private DepartmentResponse toDepartmentResponse(Department dept) {
+        if (dept == null) return null;
+        return DepartmentResponse.builder()
+                .id(dept.getId())
+                .name(dept.getName())
+                .code(dept.getCode())
+                .description(dept.getDescription())
+                .createdAt(dept.getCreatedAt())
+                .build();
+    }
+
     private PurchaseOrderResponse toResponse(PurchaseOrder po) {
         List<PurchaseOrderItemResponse> itemResponses = po.getItems().stream()
                 .map(item -> PurchaseOrderItemResponse.builder()
@@ -225,7 +250,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 .amount(po.getAmount())
                 .status(po.getStatus())
                 .category(po.getCategory())
-                .department(po.getDepartment())
+                .department(toDepartmentResponse(po.getDepartment()))
                 .priority(po.getPriority())
                 .justification(po.getJustification())
                 .vendor(po.getVendor())
@@ -240,6 +265,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 .createdAt(po.getCreatedAt())
                 .updatedAt(po.getUpdatedAt())
                 .build();
+    }
+
+    private void validateManagerDepartment(PurchaseOrder po, User manager) {
+        if (manager.getRole() != Role.MANAGER) return;
+        if (manager.getDepartment() == null || po.getDepartment() == null) return;
+        if (!manager.getDepartment().getId().equals(po.getDepartment().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "You can only approve/reject purchase orders from your own department");
+        }
     }
 
     private void publishEvent(PurchaseOrder po, String actorUsername, PurchaseOrderStatus fromStatus) {

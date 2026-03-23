@@ -158,7 +158,7 @@ public class POPdfService {
         infoCell(grid, "Title",          po.getTitle(), bold, regular, 2);
         infoCell(grid, "Submitted by",   po.getCreatedBy().getUsername(), bold, regular, 1);
         infoCell(grid, "Vendor",         po.getVendor(), bold, regular, 1);
-        infoCell(grid, "Department",     po.getDepartment(), bold, regular, 1);
+        infoCell(grid, "Department",     po.getDepartment() != null ? po.getDepartment().getName() : "-", bold, regular, 1);
         infoCell(grid, "Category",       po.getCategory() != null ? po.getCategory().name() : "-", bold, regular, 1);
         infoCell(grid, "Priority",       po.getPriority() != null ? po.getPriority().name() : "-", bold, regular, 1);
         infoCell(grid, "Created Date",   formatDate(po.getCreatedAt().toLocalDate()), bold, regular, 1);

@@ -24,4 +24,7 @@ public class RegisterRequest {
 
     @NotNull(message = "Role tidak boleh kosong!")
     private Role role;
+
+    // Wajib untuk REQUESTER dan MANAGER, null untuk FINANCE
+    private Long departmentId;
 }

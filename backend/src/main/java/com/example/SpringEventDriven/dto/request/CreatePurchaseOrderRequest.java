@@ -27,8 +27,8 @@ public class CreatePurchaseOrderRequest {
     @NotNull(message = "Category is required")
     private POCategory category;
 
-    @NotBlank(message = "Department is required")
-    private String department;
+    @NotNull(message = "Department is required")
+    private Long departmentId;
 
     private POPriority priority; // default NORMAL jika null
 

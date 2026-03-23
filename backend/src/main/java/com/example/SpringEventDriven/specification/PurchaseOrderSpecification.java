@@ -21,7 +21,8 @@ public class PurchaseOrderSpecification {
             LocalDate dateFrom,
             LocalDate dateTo,
             boolean onlyForUser,
-            Long userId) {
+            Long userId,
+            Long departmentId) {
 
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -29,6 +30,11 @@ public class PurchaseOrderSpecification {
             // Role-based: REQUESTER hanya lihat PO miliknya
             if (onlyForUser) {
                 predicates.add(cb.equal(root.get("createdBy").get("id"), userId));
+            }
+
+            // Role-based: MANAGER hanya lihat PO dari departemennya
+            if (departmentId != null) {
+                predicates.add(cb.equal(root.get("department").get("id"), departmentId));
             }
 
             // Filter by status

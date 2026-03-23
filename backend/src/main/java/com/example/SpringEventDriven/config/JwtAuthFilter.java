@@ -19,6 +19,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtAuthFilter.class);
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
@@ -36,24 +38,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String jwt = authHeader.substring(7); 
-        final String username = jwtService.extractUsername(jwt);
+        try {
+            final String jwt = authHeader.substring(7);
+            final String username = jwtService.extractUsername(jwt);
+            log.info("[JwtAuthFilter] username from token: {}", username);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                boolean valid = jwtService.isTokenValid(jwt, userDetails);
+                log.info("[JwtAuthFilter] isTokenValid={} for user={}, authorities={}", valid, username, userDetails.getAuthorities());
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
+                if (valid) {
+                    UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                        );
+                    authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
                     );
-                authToken.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.info("[JwtAuthFilter] auth set successfully for user={}", username);
+                } else {
+                    log.warn("[JwtAuthFilter] isTokenValid=false for user={}", username);
+                }
             }
+        } catch (Exception e) {
+            log.error("[JwtAuthFilter] JWT processing failed: {}", e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);

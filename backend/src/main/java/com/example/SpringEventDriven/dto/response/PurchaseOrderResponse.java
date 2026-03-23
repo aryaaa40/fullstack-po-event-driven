@@ -33,7 +33,7 @@ public class PurchaseOrderResponse {
 
     // New fields
     private POCategory category;
-    private String department;
+    private DepartmentResponse department;
     private POPriority priority;
     private String justification;
     private String vendor;
