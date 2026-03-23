@@ -46,8 +46,7 @@ export default function LoginLeftPanel() {
               maxWidth: "520px",
             }}
           >
-            Streamlining{" "}
-            <span style={{ color: "#1d4ed8" }}>Enterprise</span>
+            Streamlining <span style={{ color: "#1d4ed8" }}>Enterprise</span>
             <br />
             Procurement.
           </h1>

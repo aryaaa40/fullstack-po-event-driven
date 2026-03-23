@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Info, Loader2, SendHorizonal, X } from "lucide-react";
+import { AlertTriangle, ChevronLeft, Info, Loader2, SendHorizonal, X } from "lucide-react";
 import { useCreatePO } from "@/lib/hooks/useCreatePO";
+import { useBudgetUtilization } from "@/lib/hooks/useBudgetUtilization";
+import { useAuthStore } from "@/lib/store/authStore";
 import POFormSectionBasic from "./POFormSectionBasic";
 import POFormSectionItems from "./POFormSectionItems";
 import POFormSectionDetails from "./POFormSectionDetails";
 
 const FONT_MANROPE = "var(--font-manrope), Manrope, sans-serif";
+
+function formatIDR(value: number) {
+  return value.toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 });
+}
 
 export default function CreatePOContent() {
   const {
@@ -25,13 +31,14 @@ export default function CreatePOContent() {
     error,
   } = useCreatePO();
 
+  const { departmentId, departmentName } = useAuthStore();
+  const { utilization } = useBudgetUtilization();
+  const myBudget = utilization.find((u) => u.department.id === departmentId) ?? null;
+  const isOverBudget = myBudget !== null && amountValue > myBudget.available;
+
   const [showModal, setShowModal] = useState(false);
 
-  const formatted = amountValue.toLocaleString("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  });
+  const formatted = formatIDR(amountValue);
 
   function handleConfirm() {
     setShowModal(false);
@@ -114,10 +121,7 @@ export default function CreatePOContent() {
               className="rounded-2xl p-6"
               style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 20px rgba(42,52,57,0.05)" }}
             >
-              <h2
-                className="text-base font-bold"
-                style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
-              >
+              <h2 className="text-base font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
                 Order Summary
               </h2>
               <div className="mt-5 flex flex-col gap-3">
@@ -131,18 +135,10 @@ export default function CreatePOContent() {
                     </span>
                   </div>
                 )}
-                <div
-                  className="my-1 h-px"
-                  style={{ backgroundColor: "rgba(86,97,102,0.12)" }}
-                />
+                <div className="my-1 h-px" style={{ backgroundColor: "rgba(86,97,102,0.12)" }} />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold" style={{ color: "#2a3439" }}>
-                    Total Amount
-                  </span>
-                  <span
-                    className="text-lg font-bold"
-                    style={{ color: "#0053db", fontFamily: FONT_MANROPE }}
-                  >
+                  <span className="text-sm font-bold" style={{ color: "#2a3439" }}>Total Amount</span>
+                  <span className="text-lg font-bold" style={{ color: "#0053db", fontFamily: FONT_MANROPE }}>
                     {formatted}
                   </span>
                 </div>
@@ -158,15 +154,77 @@ export default function CreatePOContent() {
               </button>
             </div>
 
+            {/* Budget info */}
+            {departmentId && (
+              <div
+                className="rounded-2xl p-5 flex flex-col gap-3"
+                style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 20px rgba(42,52,57,0.05)" }}
+              >
+                <h2 className="text-sm font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
+                  Budget — {departmentName}
+                </h2>
+
+                {myBudget ? (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      <BudgetRow label="Total Budget" value={myBudget.totalBudget} color="#2a3439" />
+                      <BudgetRow label="Utilized" value={myBudget.utilized} color="#566166" />
+                      <BudgetRow label="Committed" value={myBudget.committed} color="#566166" />
+                      <div className="my-1 h-px" style={{ backgroundColor: "rgba(86,97,102,0.12)" }} />
+                      <BudgetRow
+                        label="Available"
+                        value={myBudget.available}
+                        color={myBudget.available <= 0 ? "#9f403d" : "#006d4a"}
+                        bold
+                      />
+                    </div>
+
+                    {/* Progress bar */}
+                    {myBudget.utilizationPercent !== null && (
+                      <div className="flex flex-col gap-1">
+                        <div className="flex justify-between text-xs" style={{ color: "#566166" }}>
+                          <span>Utilized</span>
+                          <span>{myBudget.utilizationPercent.toFixed(1)}%</span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: "#f0f4f7" }}>
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(myBudget.utilizationPercent, 100)}%`,
+                              backgroundColor: myBudget.utilizationPercent >= 90 ? "#9f403d" : "#0053db",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Over-budget warning */}
+                    {isOverBudget && amountValue > 0 && (
+                      <div
+                        className="flex items-start gap-2 rounded-xl px-3 py-2.5"
+                        style={{ backgroundColor: "#fff7f6", border: "1px solid rgba(159,64,61,0.2)" }}
+                      >
+                        <AlertTriangle size={14} className="mt-0.5 shrink-0" style={{ color: "#9f403d" }} />
+                        <p className="text-xs leading-relaxed" style={{ color: "#9f403d" }}>
+                          This PO exceeds available budget. You can still submit but it will need Finance review.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs" style={{ color: "#9ca3af" }}>
+                    No budget set for this department in {new Date().getFullYear()}.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* What happens next */}
             <div
               className="rounded-2xl p-5"
               style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 20px rgba(42,52,57,0.05)" }}
             >
-              <h2
-                className="text-sm font-bold"
-                style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
-              >
+              <h2 className="text-sm font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
                 What happens next?
               </h2>
               <p className="mt-2 text-xs leading-relaxed" style={{ color: "#566166" }}>
@@ -178,9 +236,7 @@ export default function CreatePOContent() {
                   PENDING
                 </span>{" "}
                 and routed to a{" "}
-                <span className="font-semibold" style={{ color: "#2a3439" }}>
-                  Manager
-                </span>{" "}
+                <span className="font-semibold" style={{ color: "#2a3439" }}>Manager</span>{" "}
                 for the first approval.
               </p>
             </div>
@@ -226,10 +282,7 @@ export default function CreatePOContent() {
             >
               <SendHorizonal size={22} style={{ color: "#0053db" }} />
             </div>
-            <h2
-              className="text-xl font-bold"
-              style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
-            >
+            <h2 className="text-xl font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
               Submit Purchase Order?
             </h2>
             <p className="mt-2 text-sm leading-relaxed" style={{ color: "#566166" }}>
@@ -237,26 +290,26 @@ export default function CreatePOContent() {
               <span className="font-semibold" style={{ color: "#2a3439" }}>Manager</span>{" "}
               untuk persetujuan dan tidak dapat diedit setelah disubmit.
             </p>
-            {form.title && (
+            {isOverBudget && amountValue > 0 && (
               <div
-                className="mt-5 rounded-xl px-4 py-3"
-                style={{ backgroundColor: "#f0f4f7" }}
+                className="mt-4 flex items-start gap-2 rounded-xl px-3 py-2.5"
+                style={{ backgroundColor: "#fff7f6", border: "1px solid rgba(159,64,61,0.2)" }}
               >
-                <p
-                  className="text-xs font-semibold uppercase tracking-wider"
-                  style={{ color: "#566166" }}
-                >
+                <AlertTriangle size={14} className="mt-0.5 shrink-0" style={{ color: "#9f403d" }} />
+                <p className="text-xs" style={{ color: "#9f403d" }}>
+                  Warning: This PO exceeds your department&apos;s available budget.
+                </p>
+              </div>
+            )}
+            {form.title && (
+              <div className="mt-5 rounded-xl px-4 py-3" style={{ backgroundColor: "#f0f4f7" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#566166" }}>
                   PO Title
                 </p>
-                <p className="mt-1 text-sm font-medium" style={{ color: "#2a3439" }}>
-                  {form.title}
-                </p>
+                <p className="mt-1 text-sm font-medium" style={{ color: "#2a3439" }}>{form.title}</p>
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-xs" style={{ color: "#566166" }}>Total Amount</p>
-                  <p
-                    className="text-sm font-bold"
-                    style={{ color: "#0053db", fontFamily: FONT_MANROPE }}
-                  >
+                  <p className="text-sm font-bold" style={{ color: "#0053db", fontFamily: FONT_MANROPE }}>
                     {formatted}
                   </p>
                 </div>
@@ -283,5 +336,29 @@ export default function CreatePOContent() {
         </div>
       )}
     </>
+  );
+}
+
+function BudgetRow({
+  label,
+  value,
+  color,
+  bold,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  bold?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs" style={{ color: "#566166" }}>{label}</span>
+      <span
+        className={`text-xs ${bold ? "font-bold" : "font-medium"}`}
+        style={{ color }}
+      >
+        {formatIDR(value)}
+      </span>
+    </div>
   );
 }

@@ -1,9 +1,14 @@
 import { apiClient } from "@/lib/api-client";
-import { LoginRequest, LoginResponse } from "@/types/auth";
+import { AuthResponse, LoginRequest, RegisterRequest } from "@/types/auth";
 
 export const authRepository = {
-  login: async (data: LoginRequest): Promise<LoginResponse> => {
-    const res = await apiClient.post<LoginResponse>("/api/v1/auth/login", data);
+  login: async (data: LoginRequest): Promise<AuthResponse> => {
+    const res = await apiClient.post<AuthResponse>("/api/v1/auth/login", data);
+    return res.data;
+  },
+
+  register: async (data: RegisterRequest): Promise<AuthResponse> => {
+    const res = await apiClient.post<AuthResponse>("/api/v1/auth/register", data);
     return res.data;
   },
 };

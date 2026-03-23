@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PO Manager",
+  title: "Axon - Purchase Order System",
   description: "Enterprise Purchase Order Management System",
 };
 

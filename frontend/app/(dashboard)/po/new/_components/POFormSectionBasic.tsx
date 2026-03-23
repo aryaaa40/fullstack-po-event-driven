@@ -1,5 +1,7 @@
 "use client";
 
+import { Building2 } from "lucide-react";
+import { useAuthStore } from "@/lib/store/authStore";
 import { POCategory } from "@/types/po";
 
 const CATEGORIES: { value: POCategory; label: string }[] = [
@@ -24,7 +26,6 @@ interface Props {
     title: string;
     description: string;
     category: string;
-    department: string;
     priority: string;
   };
   setField: (field: string, value: string) => void;
@@ -47,6 +48,8 @@ function onBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTM
 }
 
 export default function POFormSectionBasic({ form, setField }: Props) {
+  const { departmentName } = useAuthStore();
+
   return (
     <div
       className="flex flex-col gap-5 rounded-2xl p-6"
@@ -111,20 +114,20 @@ export default function POFormSectionBasic({ form, setField }: Props) {
           </select>
         </div>
 
+        {/* Department — read-only, auto dari user yang login */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#566166" }}>
             Department
           </label>
-          <input
-            type="text"
-            value={form.department}
-            onChange={(e) => setField("department", e.target.value)}
-            placeholder="e.g. Engineering"
-            className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
-            style={inputBase}
-            onFocus={onFocus}
-            onBlur={onBlur}
-          />
+          <div
+            className="flex items-center gap-2 rounded-xl px-4 py-3"
+            style={{ backgroundColor: "#f0f4f7" }}
+          >
+            <Building2 size={14} style={{ color: "#566166", flexShrink: 0 }} />
+            <span className="text-sm" style={{ color: departmentName ? "#2a3439" : "#9ca3af" }}>
+              {departmentName ?? "No department assigned"}
+            </span>
+          </div>
         </div>
       </div>
 

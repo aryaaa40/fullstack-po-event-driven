@@ -1,3 +1,11 @@
+export interface Department {
+  id: number;
+  name: string;
+  code: string;
+  description: string | null;
+  createdAt: string;
+}
+
 export type POCategory =
   | "IT"
   | "OFFICE_SUPPLIES"
@@ -35,7 +43,7 @@ export interface PurchaseOrder {
   updatedAt: string;
   // New fields
   category: POCategory | null;
-  department: string | null;
+  department: Department | null;
   priority: POPriority;
   justification: string | null;
   vendor: string | null;
@@ -65,12 +73,22 @@ export interface CreatePurchaseOrderItemRequest {
   unitPrice: number;
 }
 
+export interface BudgetUtilization {
+  department: Department;
+  fiscalYear: number;
+  totalBudget: number;
+  utilized: number;
+  committed: number;
+  available: number;
+  utilizationPercent: number | null;
+}
+
 export interface CreatePORequest {
   title: string;
   description: string;
   amount?: number;
   category?: POCategory;
-  department?: string;
+  departmentId: number;
   priority?: POPriority;
   justification?: string;
   vendor?: string;

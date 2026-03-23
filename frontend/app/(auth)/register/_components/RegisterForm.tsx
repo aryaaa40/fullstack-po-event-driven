@@ -1,22 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, UserRound, Users, Briefcase, DollarSign } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, UserRound, Mail, Users, Briefcase, DollarSign } from "lucide-react";
 import { authRepository } from "@/lib/repositories/authRepository";
-import { useAuthStore } from "@/lib/store/authStore";
+import { departmentRepository } from "@/lib/repositories/departmentRepository";
 import { Role } from "@/types/auth";
+import { Department } from "@/types/po";
 
 type RoleOption = {
   key: Role;
   label: string;
   Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
-};
-
-const ROLE_CREDENTIALS: Record<Role, { username: string; password: string }> = {
-  REQUESTER: { username: "aryarequester", password: "arya123" },
-  MANAGER:   { username: "aryamanager",   password: "arya123" },
-  FINANCE:   { username: "aryafinance",   password: "arya123" },
 };
 
 const ROLES: RoleOption[] = [
@@ -25,40 +20,54 @@ const ROLES: RoleOption[] = [
   { key: "FINANCE",   label: "Finance",   Icon: DollarSign },
 ];
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { setAuth } = useAuthStore();
-
-  const justRegistered = searchParams.get("registered") === "true";
 
   const [selectedRole, setSelectedRole] = useState<Role>("REQUESTER");
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [departmentId, setDepartmentId] = useState<number | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const needsDepartment = selectedRole === "REQUESTER" || selectedRole === "MANAGER";
+
+  useEffect(() => {
+    departmentRepository.getAll().then(setDepartments).catch(() => setDepartments([]));
+  }, []);
+
+  // Reset department saat role berubah ke FINANCE
+  useEffect(() => {
+    if (!needsDepartment) setDepartmentId(null);
+  }, [selectedRole, needsDepartment]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (needsDepartment && !departmentId) {
+      setError("Please select a department");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await authRepository.login({ username, password });
-      setAuth(res.token, res.user.username, res.user.role, res.user.departmentId ?? null, res.user.departmentName ?? null);
-      router.push("/dashboard");
+      await authRepository.register({
+        username,
+        email,
+        password,
+        role: selectedRole,
+        departmentId: needsDepartment ? departmentId : null,
+      });
+      router.push("/login?registered=true");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleRoleSelect(role: Role) {
-    setSelectedRole(role);
-    const creds = ROLE_CREDENTIALS[role];
-    setUsername(creds.username);
-    setPassword(creds.password);
   }
 
   return (
@@ -68,20 +77,6 @@ export default function LoginForm() {
     >
       <div className="flex w-full flex-1 items-center justify-center px-6 py-10">
         <div className="w-full" style={{ maxWidth: "380px" }}>
-          {/* Success banner setelah register */}
-          {justRegistered && (
-            <div
-              className="mb-6 rounded-xl px-4 py-3 text-sm"
-              style={{
-                backgroundColor: "#e6ffee",
-                color: "#006d4a",
-                border: "1px solid rgba(0,109,74,0.2)",
-              }}
-            >
-              Account created! Please log in to continue.
-            </div>
-          )}
-
           {/* Title */}
           <div className="mb-8">
             <h2
@@ -91,10 +86,10 @@ export default function LoginForm() {
                 fontFamily: "var(--font-manrope), Manrope, sans-serif",
               }}
             >
-              Hi, Welcome.
+              Create Account
             </h2>
             <p className="mt-1 text-sm" style={{ color: "#566166" }}>
-              Select your role and enter credentials to continue.
+              Select your role and fill in your details to get started.
             </p>
           </div>
 
@@ -106,7 +101,7 @@ export default function LoginForm() {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => handleRoleSelect(key)}
+                  onClick={() => setSelectedRole(key)}
                   className="flex flex-col items-center gap-1.5 rounded-xl py-3 text-center transition-colors"
                   style={{
                     backgroundColor: isActive ? "#ffffff" : "#f0f4f7",
@@ -147,7 +142,7 @@ export default function LoginForm() {
                   id="username"
                   type="text"
                   autoComplete="username"
-                  placeholder="Enter your username"
+                  placeholder="Choose a username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -158,24 +153,43 @@ export default function LoginForm() {
               </div>
             </div>
 
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="email"
+                className="text-xs font-semibold tracking-widest"
+                style={{ color: "#2a3439" }}
+              >
+                EMAIL
+              </label>
+              <div
+                className="flex items-center gap-2 rounded-lg px-3"
+                style={{ backgroundColor: "#f0f4f7" }}
+              >
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[#9ca3af]"
+                  style={{ color: "#2a3439" }}
+                />
+                <Mail size={16} style={{ color: "#9ca3af" }} />
+              </div>
+            </div>
+
             {/* Password */}
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="text-xs font-semibold tracking-widest"
-                  style={{ color: "#2a3439" }}
-                >
-                  PASSWORD
-                </label>
-                <button
-                  type="button"
-                  className="text-xs font-semibold"
-                  style={{ color: "#0053db" }}
-                >
-                  FORGOT?
-                </button>
-              </div>
+              <label
+                htmlFor="password"
+                className="text-xs font-semibold tracking-widest"
+                style={{ color: "#2a3439" }}
+              >
+                PASSWORD
+              </label>
               <div
                 className="flex items-center gap-2 rounded-lg px-3"
                 style={{ backgroundColor: "#f0f4f7" }}
@@ -183,11 +197,12 @@ export default function LoginForm() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  placeholder="Min. 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   className="flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[#9ca3af]"
                   style={{ color: "#2a3439" }}
                 />
@@ -206,13 +221,46 @@ export default function LoginForm() {
               </div>
             </div>
 
-            {/* Remember me */}
-            <label className="flex cursor-pointer items-center gap-2.5">
-              <input type="checkbox" className="h-4 w-4 rounded accent-[#0053db]" />
-              <span className="text-sm" style={{ color: "#566166" }}>
-                Keep me logged in for 30 days
-              </span>
-            </label>
+            {/* Department — hanya untuk REQUESTER dan MANAGER */}
+            {needsDepartment && (
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="department"
+                  className="text-xs font-semibold tracking-widest"
+                  style={{ color: "#2a3439" }}
+                >
+                  DEPARTMENT
+                </label>
+                <div
+                  className="flex items-center gap-2 rounded-lg px-3"
+                  style={{ backgroundColor: "#f0f4f7" }}
+                >
+                  <select
+                    id="department"
+                    value={departmentId ?? ""}
+                    onChange={(e) =>
+                      setDepartmentId(e.target.value ? Number(e.target.value) : null)
+                    }
+                    className="flex-1 bg-transparent py-3 text-sm outline-none"
+                    style={{ color: departmentId ? "#2a3439" : "#9ca3af" }}
+                  >
+                    <option value="" disabled>
+                      Select department
+                    </option>
+                    {departments.map((d) => (
+                      <option key={d.id} value={d.id} style={{ color: "#2a3439" }}>
+                        {d.name} ({d.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {departments.length === 0 && (
+                  <p className="text-xs" style={{ color: "#9ca3af" }}>
+                    No departments available. Contact your administrator.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Error */}
             {error && (
@@ -239,15 +287,15 @@ export default function LoginForm() {
                 fontFamily: "var(--font-manrope), Manrope, sans-serif",
               }}
             >
-              {loading ? "Signing in…" : "Login to Dashboard"}
+              {loading ? "Creating account…" : "Create Account"}
             </button>
           </form>
 
-          {/* Support */}
+          {/* Link ke login */}
           <p className="mt-6 text-center text-sm" style={{ color: "#566166" }}>
-            Don&apos;t have an account?{" "}
-            <a href="/register" className="font-semibold" style={{ color: "#0053db" }}>
-              Sign up
+            Already have an account?{" "}
+            <a href="/login" className="font-semibold" style={{ color: "#0053db" }}>
+              Sign in
             </a>
           </p>
         </div>

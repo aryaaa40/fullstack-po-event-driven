@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { poRepository } from "@/lib/repositories/poRepository";
+import { useAuthStore } from "@/lib/store/authStore";
 import { POCategory, POPriority } from "@/types/po";
 
 export interface ItemFormState {
@@ -17,7 +18,6 @@ interface FormState {
   description: string;
   // Classification
   category: string;
-  department: string;
   priority: string;
   // Manual amount (used only when no items)
   amount: string;
@@ -37,7 +37,6 @@ const INITIAL_FORM: FormState = {
   title: "",
   description: "",
   category: "",
-  department: "",
   priority: "NORMAL",
   amount: "",
   vendor: "",
@@ -52,6 +51,8 @@ const INITIAL_FORM: FormState = {
 
 export function useCreatePO() {
   const router = useRouter();
+  const { departmentId } = useAuthStore();
+
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [items, setItems] = useState<ItemFormState[]>([]);
   const [loading, setLoading] = useState(false);
@@ -86,6 +87,7 @@ export function useCreatePO() {
   function validate(): string | null {
     if (!form.title.trim()) return "Title is required.";
     if (!form.description.trim()) return "Description is required.";
+    if (!departmentId) return "Your account has no department assigned. Please contact admin.";
     if (!hasItems) {
       const amt = parseFloat(form.amount);
       if (!form.amount || isNaN(amt) || amt <= 0)
@@ -115,9 +117,9 @@ export function useCreatePO() {
       const po = await poRepository.create({
         title: form.title.trim(),
         description: form.description.trim(),
+        departmentId: departmentId!,
         priority: form.priority as POPriority,
         ...(form.category && { category: form.category as POCategory }),
-        ...(form.department.trim() && { department: form.department.trim() }),
         ...(!hasItems && { amount: parseFloat(form.amount) }),
         ...(form.vendor.trim() && { vendor: form.vendor.trim() }),
         ...(form.requiredDate && { requiredDate: form.requiredDate }),

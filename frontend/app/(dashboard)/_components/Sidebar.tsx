@@ -12,6 +12,7 @@ import {
   Settings,
   BarChart3,
   LogOut,
+  Wallet,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { Role } from "@/types/auth";
@@ -37,6 +38,7 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
     { label: "Final Approvals", href: "/po/final", Icon: CheckSquare },
     { label: "All POs", href: "/po", Icon: List },
+    { label: "Budgets", href: "/budgets", Icon: Wallet },
   ],
 };
 

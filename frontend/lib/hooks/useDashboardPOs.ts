@@ -13,13 +13,13 @@ const DASHBOARD_STATUS: Partial<Record<Role, POStatus>> = {
 };
 
 export function useDashboardPOs() {
-  const role = useAuthStore((s) => s.role);
+  const { role, token } = useAuthStore();
   const [pos, setPOs] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPOs = useCallback(() => {
-    if (!role) return;
+    if (!role || !token) return;
     const status = DASHBOARD_STATUS[role];
     setLoading(true);
     poRepository
@@ -27,7 +27,7 @@ export function useDashboardPOs() {
       .then((page) => setPOs(page.content))
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [role]);
+  }, [role, token]);
 
   useEffect(() => {
     fetchPOs();

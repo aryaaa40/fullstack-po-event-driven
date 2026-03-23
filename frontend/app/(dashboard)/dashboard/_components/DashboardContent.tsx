@@ -4,12 +4,14 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useDashboardPOs } from "@/lib/hooks/useDashboardPOs";
 import { usePONotification } from "@/lib/hooks/usePONotification";
+import { useBudgetUtilization } from "@/lib/hooks/useBudgetUtilization";
 import { Role } from "@/types/auth";
 import { useRecentActivity } from "@/lib/hooks/useRecentActivity";
 import WelcomeCard from "./WelcomeCard";
 import StatCards from "./StatCards";
 import POTable from "./POTable";
 import RecentActivity from "./RecentActivity";
+import BudgetUtilizationWidget from "./BudgetUtilizationWidget";
 
 const TABLE_TITLE: Record<Role, string> = {
   REQUESTER: "My Purchase Orders",
@@ -17,11 +19,14 @@ const TABLE_TITLE: Record<Role, string> = {
   FINANCE:   "Awaiting Final Approval",
 };
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export default function DashboardContent() {
-  const { username, role } = useAuthStore();
+  const { username, role, departmentId } = useAuthStore();
   const { pos, loading, error, refetch } = useDashboardPOs();
   const { notifications } = usePONotification();
   const { activities, loading: actLoading, refetch: refetchActivity } = useRecentActivity();
+  const { utilization, loading: budgetLoading } = useBudgetUtilization(CURRENT_YEAR);
 
   // Auto-refetch tabel dan recent activity saat ada event WebSocket masuk
   useEffect(() => {
@@ -42,6 +47,13 @@ export default function DashboardContent() {
         loading={loading}
         error={error}
         title={TABLE_TITLE[role]}
+      />
+      <BudgetUtilizationWidget
+        utilization={utilization}
+        loading={budgetLoading}
+        role={role}
+        departmentId={departmentId}
+        fiscalYear={CURRENT_YEAR}
       />
       <RecentActivity activities={activities} loading={actLoading} />
     </div>
