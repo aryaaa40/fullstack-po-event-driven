@@ -115,7 +115,7 @@ export default function PODetailCard({ po }: { po: PurchaseOrder }) {
             className="rounded-full px-3 py-1 text-xs font-semibold"
             style={{ backgroundColor: "#f0f4f7", color: "#566166" }}
           >
-            {po.department}
+            {po.department.name}
           </span>
         )}
       </div>
