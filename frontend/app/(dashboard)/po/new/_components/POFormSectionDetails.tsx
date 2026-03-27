@@ -30,7 +30,7 @@ function onBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
   e.currentTarget.style.border = "1px solid transparent";
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label
@@ -56,7 +56,7 @@ export default function POFormSectionDetails({ form, setField }: Props) {
       </p>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Vendor">
+        <Field label={<>Vendor <span style={{ color: "#9f403d" }}>*</span></>}>
           <input
             type="text"
             value={form.vendor}
@@ -69,7 +69,7 @@ export default function POFormSectionDetails({ form, setField }: Props) {
           />
         </Field>
 
-        <Field label="Required Date">
+        <Field label={<>Required Date <span style={{ color: "#9f403d" }}>*</span></>}>
           <input
             type="date"
             value={form.requiredDate}

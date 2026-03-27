@@ -61,7 +61,28 @@ export function usePONotification() {
   const username = useAuthStore((s) => s.username);
   const role = useAuthStore((s) => s.role);
   const [notifications, setNotifications] = useState<PONotification[]>([]);
+  const [initialized, setInitialized] = useState(false);
   const clientRef = useRef<Client | null>(null);
+
+  // Load from local storage on mount when username is available
+  useEffect(() => {
+    if (!username) return;
+    const stored = localStorage.getItem(`po_notifs_${username}`);
+    if (stored) {
+      try {
+        setNotifications(JSON.parse(stored));
+      } catch (e) {
+        console.error("Failed to parse stored notifications", e);
+      }
+    }
+    setInitialized(true);
+  }, [username]);
+
+  // Save to local storage whenever notifications change
+  useEffect(() => {
+    if (!username || !initialized) return;
+    localStorage.setItem(`po_notifs_${username}`, JSON.stringify(notifications));
+  }, [notifications, username, initialized]);
 
   useEffect(() => {
     if (!token || !username || !role) return;

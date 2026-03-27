@@ -87,28 +87,30 @@ export function useCreatePO() {
   function validate(): string | null {
     if (!form.title.trim()) return "Title is required.";
     if (!form.description.trim()) return "Description is required.";
+    if (!form.category) return "Category is required.";
+    if (!form.vendor.trim()) return "Vendor is required.";
+    if (!form.requiredDate) return "Required date is required.";
     if (!departmentId) return "Your account has no department assigned. Please contact admin.";
-    if (!hasItems) {
-      const amt = parseFloat(form.amount);
-      if (!form.amount || isNaN(amt) || amt <= 0)
-        return "Either add line items or enter a total amount.";
-    } else {
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (!item.itemName.trim()) return `Item ${i + 1}: name is required.`;
-        const qty = parseFloat(item.quantity);
-        if (!item.quantity || isNaN(qty) || qty <= 0)
-          return `Item ${i + 1}: quantity must be a positive number.`;
-        const price = parseFloat(item.unitPrice);
-        if (!item.unitPrice || isNaN(price) || price <= 0)
-          return `Item ${i + 1}: unit price must be a positive number.`;
-      }
+    
+    if (!hasItems) return "At least one item is required.";
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.itemName.trim()) return `Item ${i + 1}: name is required.`;
+      const qty = parseFloat(item.quantity);
+      if (!item.quantity || isNaN(qty) || qty <= 0)
+        return `Item ${i + 1}: quantity must be a positive number.`;
+      const price = parseFloat(item.unitPrice);
+      if (!item.unitPrice || isNaN(price) || price <= 0)
+        return `Item ${i + 1}: unit price must be a positive number.`;
     }
+    
     return null;
   }
 
   async function submit() {
     const err = validate();
+
     if (err) { setError(err); return; }
 
     setLoading(true);

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, UserRound, Mail, Users, Briefcase, DollarSign } from "lucide-react";
+import { Eye, EyeOff, UserRound, Mail, Users, Briefcase, DollarSign, ChevronDown, Check } from "lucide-react";
 import { authRepository } from "@/lib/repositories/authRepository";
 import { departmentRepository } from "@/lib/repositories/departmentRepository";
 import { Role } from "@/types/auth";
@@ -19,6 +19,89 @@ const ROLES: RoleOption[] = [
   { key: "MANAGER",   label: "Manager",   Icon: Briefcase },
   { key: "FINANCE",   label: "Finance",   Icon: DollarSign },
 ];
+
+function RegisterDepartmentDropdown({
+  value,
+  departments,
+  onChange,
+}: {
+  value: number | null;
+  departments: Department[];
+  onChange: (val: number | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedDepartment = departments.find((d) => d.id === value);
+
+  return (
+    <div className="relative w-full" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-sm transition-all duration-200"
+        style={{
+          backgroundColor: open ? "#ffffff" : "#f0f4f7",
+          border: open ? "1px solid rgba(0,83,219,0.2)" : "1px solid transparent",
+          color: selectedDepartment ? "#2a3439" : "#9ca3af",
+        }}
+      >
+        <span>
+          {selectedDepartment ? `${selectedDepartment.name} (${selectedDepartment.code})` : "Select department"}
+        </span>
+        <ChevronDown
+          size={16}
+          strokeWidth={2.5}
+          style={{ color: "#9ca3af" }}
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute left-0 bottom-[calc(100%+8px)] z-20 w-full rounded-xl py-2 shadow-[0_-8px_30px_rgba(42,52,57,0.12)]"
+          style={{
+            backgroundColor: "#ffffff",
+            border: "1px solid rgba(42,52,57,0.06)",
+            transformOrigin: "bottom center",
+          }}
+        >
+          <div className="flex max-h-52 flex-col overflow-y-auto px-2">
+            {departments.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => {
+                  onChange(d.id);
+                  setOpen(false);
+                }}
+                className="flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-[#f7f9fb]"
+                style={{
+                  color: value === d.id ? "#0053db" : "#2a3439",
+                  backgroundColor: value === d.id ? "#eef4ff" : "transparent",
+                  fontWeight: value === d.id ? 600 : 500,
+                }}
+              >
+                {d.name} ({d.code})
+                {value === d.id && <Check size={16} strokeWidth={3} style={{ color: "#0053db" }} />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -231,29 +314,11 @@ export default function RegisterForm() {
                 >
                   DEPARTMENT
                 </label>
-                <div
-                  className="flex items-center gap-2 rounded-lg px-3"
-                  style={{ backgroundColor: "#f0f4f7" }}
-                >
-                  <select
-                    id="department"
-                    value={departmentId ?? ""}
-                    onChange={(e) =>
-                      setDepartmentId(e.target.value ? Number(e.target.value) : null)
-                    }
-                    className="flex-1 bg-transparent py-3 text-sm outline-none"
-                    style={{ color: departmentId ? "#2a3439" : "#9ca3af" }}
-                  >
-                    <option value="" disabled>
-                      Select department
-                    </option>
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id} style={{ color: "#2a3439" }}>
-                        {d.name} ({d.code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <RegisterDepartmentDropdown
+                  value={departmentId}
+                  departments={departments}
+                  onChange={setDepartmentId}
+                />
                 {departments.length === 0 && (
                   <p className="text-xs" style={{ color: "#9ca3af" }}>
                     No departments available. Contact your administrator.

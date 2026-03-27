@@ -1,22 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = useState(false);
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const token = useAuthStore((s) => s.token);
   const router = useRouter();
 
   useEffect(() => {
-    if (hasHydrated && !token) router.replace("/login");
-  }, [hasHydrated, token, router]);
+    setIsMounted(true);
+  }, []);
 
-  // Tunggu hydration selesai sebelum render apapun.
+  useEffect(() => {
+    if (isMounted && hasHydrated && !token) {
+      router.replace("/login");
+    }
+  }, [isMounted, hasHydrated, token, router]);
+
+  if (!isMounted) return null;
+
   if (!hasHydrated) return null;
 
-  // Hydration selesai tapi tidak ada token.
   if (!token) return null;
 
   return <>{children}</>;

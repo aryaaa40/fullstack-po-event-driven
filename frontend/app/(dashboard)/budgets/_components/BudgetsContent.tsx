@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useBudgets } from "@/lib/hooks/useBudgets";
 import { useDepartments } from "@/lib/hooks/useDepartments";
@@ -59,13 +59,21 @@ export default function BudgetsContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1
-            className="text-2xl font-bold leading-tight"
-            style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
-          >
-            Budget Management
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "#566166" }}>
+          <div className="flex items-center gap-2.5">
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-xl"
+              style={{ backgroundColor: "#f0f4f7" }}
+            >
+              <Wallet size={18} style={{ color: "#0053db" }} />
+            </div>
+            <h1
+              className="text-2xl font-bold leading-tight"
+              style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
+            >
+              Budget Management
+            </h1>
+          </div>
+          <p className="mt-1.5 text-sm" style={{ color: "#566166" }}>
             Manage department budgets per fiscal year.
           </p>
         </div>

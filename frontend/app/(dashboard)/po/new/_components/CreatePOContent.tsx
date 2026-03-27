@@ -286,9 +286,9 @@ export default function CreatePOContent() {
               Submit Purchase Order?
             </h2>
             <p className="mt-2 text-sm leading-relaxed" style={{ color: "#566166" }}>
-              Pastikan semua detail sudah benar. PO ini akan langsung dikirim ke{" "}
+              Make sure all details are correct. This PO will be sent directly to the manager{" "}
               <span className="font-semibold" style={{ color: "#2a3439" }}>Manager</span>{" "}
-              untuk persetujuan dan tidak dapat diedit setelah disubmit.
+              for approval and cannot be edited after submission.
             </p>
             {isOverBudget && amountValue > 0 && (
               <div
@@ -318,18 +318,18 @@ export default function CreatePOContent() {
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-70"
+                className="flex-1 rounded-xl py-2.5 text-sm font-semibold cursor-pointer transition-opacity hover:opacity-70"
                 style={{ backgroundColor: "#f0f4f7", color: "#566166", fontFamily: FONT_MANROPE }}
               >
-                Batal
+                Cancel
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
+                className="flex flex-1 items-center justify-center gap-2 cursor-pointer rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
                 style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
               >
                 <SendHorizonal size={15} />
-                Ya, Submit
+                Yes, Submit
               </button>
             </div>
           </div>
