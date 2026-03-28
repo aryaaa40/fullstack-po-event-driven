@@ -52,8 +52,8 @@ function SingleDeptView({ item }: { item: BudgetUtilization }) {
     <div className="flex gap-6">
       {/* ── Left: Total Budget + Breakdown ─────────────────────────────── */}
       <div
-        className="flex flex-col gap-5 rounded-xl px-5 py-4"
-        style={{ backgroundColor: "#f0f4f7", minWidth: 200 }}
+        className="flex flex-col gap-5 rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-5"
+        style={{ minWidth: 260 }}
       >
         {/* Total Budget */}
         <div>
@@ -143,73 +143,75 @@ function SingleDeptView({ item }: { item: BudgetUtilization }) {
 
       {/* ── Right: Budget Composition ───────────────────────────────────── */}
       <div className="flex flex-1 flex-col gap-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <p
-            className="text-base font-bold"
-            style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
-          >
-            Budget Composition
-          </p>
-          <span
-            className="rounded-full px-3 py-1 text-xs font-bold"
-            style={{ backgroundColor: "#eef2ff", color: "#0053db" }}
-          >
-            {totalUsagePct.toFixed(0)}% Total Usage
-          </span>
+        {/* Top Panel: Composition */}
+        <div className="flex flex-col gap-4 rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-5">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <p
+              className="text-base font-bold"
+              style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
+            >
+              Budget Composition
+            </p>
+            <span
+              className="rounded-full px-3 py-1 text-xs font-bold"
+              style={{ backgroundColor: "#eef2ff", color: "#0053db" }}
+            >
+              {totalUsagePct.toFixed(0)}% Total Usage
+            </span>
+          </div>
+
+          {/* Segmented bar */}
+          <div>
+            <div className="flex h-3 w-full overflow-hidden rounded-full">
+              <div
+                style={{ width: `${barUtilized}%`, backgroundColor: "#0053db" }}
+              />
+              <div
+                style={{ width: `${barCommitted}%`, backgroundColor: "#aec6ff" }}
+              />
+              <div
+                style={{ width: `${barAvailable}%`, backgroundColor: "#d9e4ea" }}
+              />
+            </div>
+            {/* Legend */}
+            <div className="mt-4 flex items-center gap-5">
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                  style={{ backgroundColor: "#0053db" }}
+                />
+                <span className="text-xs" style={{ color: "#566166" }}>
+                  Current Spend
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                  style={{ backgroundColor: "#aec6ff" }}
+                />
+                <span className="text-xs" style={{ color: "#566166" }}>
+                  Pending Approval
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                  style={{ backgroundColor: "#d9e4ea" }}
+                />
+                <span className="text-xs" style={{ color: "#566166" }}>
+                  Available Liquid
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Segmented bar */}
-        <div>
-          <div className="flex h-3 w-full overflow-hidden rounded-full">
-            <div
-              style={{ width: `${barUtilized}%`, backgroundColor: "#0053db" }}
-            />
-            <div
-              style={{ width: `${barCommitted}%`, backgroundColor: "#aec6ff" }}
-            />
-            <div
-              style={{ width: `${barAvailable}%`, backgroundColor: "#d9e4ea" }}
-            />
-          </div>
-          {/* Legend */}
-          <div className="mt-2.5 flex items-center gap-5">
-            <div className="flex items-center gap-1.5">
-              <span
-                className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                style={{ backgroundColor: "#0053db" }}
-              />
-              <span className="text-xs" style={{ color: "#566166" }}>
-                Current Spend
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                style={{ backgroundColor: "#aec6ff" }}
-              />
-              <span className="text-xs" style={{ color: "#566166" }}>
-                Pending Approval
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                style={{ backgroundColor: "#d9e4ea" }}
-              />
-              <span className="text-xs" style={{ color: "#566166" }}>
-                Available Liquid
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Burn Rate + Forecast */}
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        {/* Bottom Panels: Burn Rate + Forecast */}
+        <div className="grid grid-cols-2 gap-4">
           {/* Burn Rate */}
           <div
-            className="rounded-xl px-4 py-3"
-            style={{ backgroundColor: "#f0f4f7" }}
+            className="flex flex-col justify-center rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-4"
           >
             <p
               className="text-xs font-semibold tracking-widest uppercase"
@@ -223,9 +225,9 @@ function SingleDeptView({ item }: { item: BudgetUtilization }) {
             >
               {formatIDRShort(weeklyBurnRate)} / week
             </p>
-            <div className="mt-1 flex items-center gap-1">
-              <TrendingDown size={11} style={{ color: "#006d4a" }} />
-              <span className="text-xs font-medium" style={{ color: "#006d4a" }}>
+            <div className="mt-1.5 flex items-center gap-1">
+              <TrendingDown size={12} style={{ color: "#006d4a" }} />
+              <span className="text-[11px] font-medium" style={{ color: "#006d4a" }}>
                 Current Month
               </span>
             </div>
@@ -233,8 +235,7 @@ function SingleDeptView({ item }: { item: BudgetUtilization }) {
 
           {/* Forecast */}
           <div
-            className="rounded-xl px-4 py-3"
-            style={{ backgroundColor: "#f0f4f7" }}
+            className="flex flex-col justify-center rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-4"
           >
             <p
               className="text-xs font-semibold tracking-widest uppercase"
@@ -248,7 +249,7 @@ function SingleDeptView({ item }: { item: BudgetUtilization }) {
             >
               {depletionDate}
             </p>
-            <p className="mt-1 text-xs" style={{ color: "#566166" }}>
+            <p className="mt-1.5 text-[11px]" style={{ color: "#566166" }}>
               Est. Depletion Date
             </p>
           </div>
@@ -293,8 +294,8 @@ function AllDeptsView({ items }: { items: BudgetUtilization[] }) {
       <div className="flex gap-5">
         {/* Total budget summary card */}
         <div
-          className="flex flex-col gap-4 rounded-xl px-5 py-4"
-          style={{ backgroundColor: "#f0f4f7", minWidth: 200 }}
+          className="flex flex-col gap-5 rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-5"
+          style={{ minWidth: 260 }}
         >
           <div>
             <p
@@ -353,45 +354,48 @@ function AllDeptsView({ items }: { items: BudgetUtilization[] }) {
 
         {/* Budget Composition + mini cards */}
         <div className="flex flex-1 flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <p
-              className="text-base font-bold"
-              style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
-            >
-              Budget Composition
-            </p>
-            <span
-              className="rounded-full px-3 py-1 text-xs font-bold"
-              style={{ backgroundColor: "#eef2ff", color: "#0053db" }}
-            >
-              {overallUsagePct}% Total Usage
-            </span>
+          {/* Top Panel: Composition */}
+          <div className="flex flex-col gap-4 rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-5">
+            <div className="flex items-center justify-between">
+              <p
+                className="text-base font-bold"
+                style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
+              >
+                Budget Composition
+              </p>
+              <span
+                className="rounded-full px-3 py-1 text-xs font-bold"
+                style={{ backgroundColor: "#eef2ff", color: "#0053db" }}
+              >
+                {overallUsagePct}% Total Usage
+              </span>
+            </div>
+
+            <div>
+              <div className="flex h-3 w-full overflow-hidden rounded-full">
+                <div style={{ width: `${barUtilized}%`, backgroundColor: "#0053db" }} />
+                <div style={{ width: `${barCommitted}%`, backgroundColor: "#aec6ff" }} />
+                <div style={{ width: `${barAvailable}%`, backgroundColor: "#d9e4ea" }} />
+              </div>
+              <div className="mt-4 flex items-center gap-5">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "#0053db" }} />
+                  <span className="text-xs" style={{ color: "#566166" }}>Current Spend</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "#aec6ff" }} />
+                  <span className="text-xs" style={{ color: "#566166" }}>Pending Approval</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "#d9e4ea" }} />
+                  <span className="text-xs" style={{ color: "#566166" }}>Available Liquid</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <div className="flex h-3 w-full overflow-hidden rounded-full">
-              <div style={{ width: `${barUtilized}%`, backgroundColor: "#0053db" }} />
-              <div style={{ width: `${barCommitted}%`, backgroundColor: "#aec6ff" }} />
-              <div style={{ width: `${barAvailable}%`, backgroundColor: "#d9e4ea" }} />
-            </div>
-            <div className="mt-2.5 flex items-center gap-5">
-              <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "#0053db" }} />
-                <span className="text-xs" style={{ color: "#566166" }}>Current Spend</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "#aec6ff" }} />
-                <span className="text-xs" style={{ color: "#566166" }}>Pending Approval</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "#d9e4ea" }} />
-                <span className="text-xs" style={{ color: "#566166" }}>Available Liquid</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "#f0f4f7" }}>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col justify-center rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-4">
               <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#566166" }}>
                 Burn Rate
               </p>
@@ -401,14 +405,14 @@ function AllDeptsView({ items }: { items: BudgetUtilization[] }) {
               >
                 {formatIDRShort(weeklyBurnRate)} / week
               </p>
-              <div className="mt-1 flex items-center gap-1">
-                <TrendingDown size={11} style={{ color: "#006d4a" }} />
-                <span className="text-xs font-medium" style={{ color: "#006d4a" }}>
+              <div className="mt-1.5 flex items-center gap-1">
+                <TrendingDown size={12} style={{ color: "#006d4a" }} />
+                <span className="text-[11px] font-medium" style={{ color: "#006d4a" }}>
                   All Departments
                 </span>
               </div>
             </div>
-            <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "#f0f4f7" }}>
+            <div className="flex flex-col justify-center rounded-2xl border border-[#d9e4ea] bg-[#fafcfd] px-6 py-4">
               <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#566166" }}>
                 Forecast
               </p>
@@ -418,7 +422,7 @@ function AllDeptsView({ items }: { items: BudgetUtilization[] }) {
               >
                 {depletionDate}
               </p>
-              <p className="mt-1 text-xs" style={{ color: "#566166" }}>Est. Depletion Date</p>
+              <p className="mt-1.5 text-[11px]" style={{ color: "#566166" }}>Est. Depletion Date</p>
             </div>
           </div>
         </div>
