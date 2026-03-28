@@ -25,6 +25,9 @@ function formatDate(dateStr: string) {
 }
 
 export default function RecentActivity({ activities, loading }: Props) {
+  const DISPLAY_LIMIT = 5;
+  const displayedActivities = activities.slice(0, DISPLAY_LIMIT);
+  const hasMore = activities.length > DISPLAY_LIMIT;
 
   return (
     <div
@@ -34,15 +37,20 @@ export default function RecentActivity({ activities, loading }: Props) {
         boxShadow: "0 4px 20px rgba(42,52,57,0.05)",
       }}
     >
-      <h2
-        className="mb-5 text-base font-bold"
-        style={{
-          color: "#2a3439",
-          fontFamily: "var(--font-manrope), Manrope, sans-serif",
-        }}
-      >
-        Recent Activity
-      </h2>
+      <div className="mb-5">
+        <h2
+          className="text-base font-bold"
+          style={{
+            color: "#2a3439",
+            fontFamily: "var(--font-manrope), Manrope, sans-serif",
+          }}
+        >
+          Recent Activity
+        </h2>
+        <p className="mt-1 text-xs" style={{ color: "#566166" }}>
+          Track the latest status updates and approvals for your purchase orders.
+        </p>
+      </div>
 
       {loading && (
         <p className="text-sm" style={{ color: "#566166" }}>
@@ -56,11 +64,12 @@ export default function RecentActivity({ activities, loading }: Props) {
         </p>
       )}
 
-      {!loading && activities.length > 0 && (
-        <ul className="flex flex-col">
-          {activities.map((item, index) => {
-            const dotColor = STATUS_DOT[item.toStatus];
-            const isLast = index === activities.length - 1;
+      {!loading && displayedActivities.length > 0 && (
+        <div className="flex flex-col">
+          <ul className="flex flex-col">
+            {displayedActivities.map((item, index) => {
+              const dotColor = STATUS_DOT[item.toStatus];
+              const isLast = index === displayedActivities.length - 1;
 
             return (
               <li
@@ -103,8 +112,17 @@ export default function RecentActivity({ activities, loading }: Props) {
                 </div>
               </li>
             );
-          })}
-        </ul>
+            })}
+          </ul>
+          {hasMore && (
+            <p
+              className="mt-3 text-center text-xs font-semibold"
+              style={{ color: "#8fa3ab" }}
+            >
+              Showing latest {DISPLAY_LIMIT} activities
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

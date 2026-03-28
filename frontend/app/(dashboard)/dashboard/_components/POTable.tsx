@@ -6,7 +6,7 @@ const STATUS_STYLE: Record<
   POStatus,
   { bg: string; color: string; label: string }
 > = {
-  PENDING: { bg: "#eef3ff", color: "#0053db", label: "Pending" },
+  PENDING: { bg: "#eef3ff", color: "#0053db", label: "PENDING" },
   MANAGER_APPROVED: {
     bg: "#f3eeff",
     color: "#6750A4",

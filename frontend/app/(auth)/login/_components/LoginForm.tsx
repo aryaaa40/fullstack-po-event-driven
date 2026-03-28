@@ -14,15 +14,15 @@ type RoleOption = {
 };
 
 const ROLE_CREDENTIALS: Record<Role, { username: string; password: string }> = {
-  REQUESTER: { username: "aryarequester", password: "arya123" },
-  MANAGER:   { username: "aryamanager",   password: "arya123" },
-  FINANCE:   { username: "aryafinance",   password: "arya123" },
+  REQUESTER: { username: "hrrequester", password: "hr123456" },
+  MANAGER: { username: "hrmanager", password: "hr123456" },
+  FINANCE: { username: "financebudget", password: "finance123" },
 };
 
 const ROLES: RoleOption[] = [
   { key: "REQUESTER", label: "Requester", Icon: Users },
-  { key: "MANAGER",   label: "Manager",   Icon: Briefcase },
-  { key: "FINANCE",   label: "Finance",   Icon: DollarSign },
+  { key: "MANAGER", label: "Manager", Icon: Briefcase },
+  { key: "FINANCE", label: "Finance", Icon: DollarSign },
 ];
 
 export default function LoginForm() {

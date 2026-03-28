@@ -205,7 +205,7 @@ function SingleDeptView({ item }: { item: BudgetUtilization }) {
         </div>
 
         {/* Burn Rate + Forecast */}
-        <div className="mt-auto grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           {/* Burn Rate */}
           <div
             className="rounded-xl px-4 py-3"
@@ -390,7 +390,7 @@ function AllDeptsView({ items }: { items: BudgetUtilization[] }) {
             </div>
           </div>
 
-          <div className="mt-auto grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "#f0f4f7" }}>
               <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#566166" }}>
                 Burn Rate
@@ -527,13 +527,20 @@ export default function BudgetUtilizationWidget({
       }}
     >
       {/* Header */}
-      <div className="mb-5 flex items-center justify-between">
-        <h2
-          className="text-base font-bold"
-          style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
-        >
-          {title}
-        </h2>
+      <div className="mb-5 flex items-start justify-between">
+        <div>
+          <h2
+            className="text-base font-bold"
+            style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
+          >
+            {title}
+          </h2>
+          <p className="mt-1 text-xs" style={{ color: "#566166" }}>
+            {isFinance 
+              ? "Organization-wide fiscal budget utilization limits."
+              : "Overview of your department's fiscal budget utilization limits."}
+          </p>
+        </div>
         {isFinance && (
           <Link
             href="/budgets"

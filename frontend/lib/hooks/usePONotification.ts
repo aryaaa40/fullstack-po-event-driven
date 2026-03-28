@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useAuthStore } from "@/lib/store/authStore";
+import { notificationRepository } from "@/lib/repositories/notificationRepository";
 
 export interface PONotification {
   id: string;
@@ -61,28 +62,16 @@ export function usePONotification() {
   const username = useAuthStore((s) => s.username);
   const role = useAuthStore((s) => s.role);
   const [notifications, setNotifications] = useState<PONotification[]>([]);
-  const [initialized, setInitialized] = useState(false);
   const clientRef = useRef<Client | null>(null);
 
-  // Load from local storage on mount when username is available
+  // Fetch actual historical notifications from Database on mount
   useEffect(() => {
-    if (!username) return;
-    const stored = localStorage.getItem(`po_notifs_${username}`);
-    if (stored) {
-      try {
-        setNotifications(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse stored notifications", e);
-      }
-    }
-    setInitialized(true);
-  }, [username]);
-
-  // Save to local storage whenever notifications change
-  useEffect(() => {
-    if (!username || !initialized) return;
-    localStorage.setItem(`po_notifs_${username}`, JSON.stringify(notifications));
-  }, [notifications, username, initialized]);
+    if (!token || !username || !role) return;
+    notificationRepository
+      .getMyNotifications()
+      .then((data) => setNotifications(data as PONotification[]))
+      .catch((e) => console.error("Failed to load historical notifications", e));
+  }, [token, username, role]);
 
   useEffect(() => {
     if (!token || !username || !role) return;
@@ -134,8 +123,14 @@ export function usePONotification() {
     };
   }, [token, username, role]);
 
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const markAllRead = async () => {
+    try {
+      if (unreadCount === 0) return;
+      await notificationRepository.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (e) {
+      console.error("Failed to mark notifications as read", e);
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;

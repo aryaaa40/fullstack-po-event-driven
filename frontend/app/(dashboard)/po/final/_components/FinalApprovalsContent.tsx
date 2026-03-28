@@ -7,7 +7,7 @@ import POTable from "@/app/(dashboard)/dashboard/_components/POTable";
 const FONT_MANROPE = "var(--font-manrope), Manrope, sans-serif";
 
 export default function FinalApprovalsContent() {
-  const { pos, loading, error } = usePOList("MANAGER_APPROVED");
+  const { pos, loading, error } = usePOList({ status: "MANAGER_APPROVED" });
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,7 +33,7 @@ export default function FinalApprovalsContent() {
           </p>
         </div>
 
-        {/* Count badge */}
+        Count badge
         {!loading && !error && (
           <div
             className="flex items-center gap-2 rounded-xl px-4 py-2.5"
@@ -46,9 +46,9 @@ export default function FinalApprovalsContent() {
               {pos.length}
             </span>
             <span className="text-xs font-medium leading-tight" style={{ color: "#006d4a" }}>
-              awaiting
+              Awaiting
               <br />
-              finance
+              Finance
             </span>
           </div>
         )}

@@ -24,7 +24,7 @@ export const poRepository = {
       size: String(size),
     });
     if (status) query.set("status", status);
-    if (search && search.trim()) query.set("search", search.trim());
+    if (typeof search === "string" && search.trim()) query.set("search", search.trim());
     if (category) query.set("category", category);
     if (priority) query.set("priority", priority);
     if (dateFrom) query.set("dateFrom", dateFrom);

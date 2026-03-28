@@ -7,7 +7,7 @@ import POTable from "@/app/(dashboard)/dashboard/_components/POTable";
 const FONT_MANROPE = "var(--font-manrope), Manrope, sans-serif";
 
 export default function PendingApprovalsContent() {
-  const { pos, loading, error } = usePOList("PENDING");
+  const { pos, loading, error } = usePOList({ status: "PENDING" });
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,9 +46,9 @@ export default function PendingApprovalsContent() {
               {pos.length}
             </span>
             <span className="text-xs font-medium leading-tight" style={{ color: "#0053db" }}>
-              awaiting
+              Awaiting
               <br />
-              review
+              Review
             </span>
           </div>
         )}
