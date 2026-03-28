@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { poRepository } from "@/lib/repositories/poRepository";
 import { useAuthStore } from "@/lib/store/authStore";
+import { useDraftStore } from "@/lib/store/draftStore";
 import { POCategory, POPriority } from "@/types/po";
 
 export interface ItemFormState {
@@ -13,7 +14,7 @@ export interface ItemFormState {
   unitPrice: string;
 }
 
-interface FormState {
+export interface FormState {
   title: string;
   description: string;
   // Classification
@@ -51,12 +52,27 @@ const INITIAL_FORM: FormState = {
 
 export function useCreatePO() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draftId");
+  
   const { departmentId } = useAuthStore();
+  const { saveDraft, getDraft, deleteDraft } = useDraftStore();
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [items, setItems] = useState<ItemFormState[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load from draft if navigating from Drafts page
+  useEffect(() => {
+    if (draftId) {
+      const draft = getDraft(draftId);
+      if (draft && draft.data) {
+        setForm(draft.data.form || INITIAL_FORM);
+        setItems(draft.data.items || []);
+      }
+    }
+  }, [draftId, getDraft]);
 
   function setField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -108,6 +124,15 @@ export function useCreatePO() {
     return null;
   }
 
+  function saveAsDraft() {
+    saveDraft(draftId, { form, items });
+    toast.success("Saved as draft!", {
+      duration: 3000,
+      description: "You can resume editing it from the My Drafts menu later.",
+    });
+    router.push("/po/drafts");
+  }
+
   async function submit() {
     const err = validate();
 
@@ -153,6 +178,11 @@ export function useCreatePO() {
         duration: 4000,
       });
 
+      // Cleanup local draft if submitted successfully
+      if (draftId) {
+        deleteDraft(draftId);
+      }
+
       router.push(`/po/${po.id}`);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to create PO.");
@@ -171,6 +201,7 @@ export function useCreatePO() {
     hasItems,
     amountValue,
     submit,
+    saveAsDraft,
     loading,
     error,
   };

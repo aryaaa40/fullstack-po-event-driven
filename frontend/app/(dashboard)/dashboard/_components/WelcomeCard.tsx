@@ -21,6 +21,18 @@ const CHIP_LABEL: Record<Role, string> = {
   FINANCE:   "FINANCE OVERVIEW",
 };
 
+const VIEW_ACTION_LABEL: Record<Role, string> = {
+  REQUESTER: "View All POs",
+  MANAGER:   "Review Pending POs",
+  FINANCE:   "Review Final Approvals",
+};
+
+const VIEW_ACTION_HREF: Record<Role, string> = {
+  REQUESTER: "/po",
+  MANAGER:   "/po/pending",
+  FINANCE:   "/po/final",
+};
+
 interface Props {
   username: string;
   role: Role;
@@ -80,12 +92,13 @@ export default function WelcomeCard({ username, role, pos }: Props) {
             + Create New PO
           </Link>
         )}
-        <button
-          className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-[#e8ecf0]"
+        <Link
+          href={VIEW_ACTION_HREF[role]}
+          className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors hover:opacity-80"
           style={{ backgroundColor: "#f0f4f7", color: "#2a3439" }}
         >
-          View Analytics
-        </button>
+          {VIEW_ACTION_LABEL[role]}
+        </Link>
       </div>
     </div>
   );

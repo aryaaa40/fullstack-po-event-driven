@@ -93,14 +93,16 @@ export default function PODetailContent({ id }: { id: number }) {
             <button
               onClick={handleExportPdf}
               disabled={exporting}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50 cursor-pointer"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-50 cursor-pointer"
               style={{
-                backgroundColor: "#f0f4f7",
+                backgroundColor: "#ffffff",
                 color: "#2a3439",
+                border: "1px solid #d9e4ea",
+                boxShadow: "0 1px 2px rgba(42,52,57,0.04)",
                 fontFamily: FONT_MANROPE,
               }}
             >
-              <Download size={15} />
+              <Download size={15} style={{ color: "#0053db" }} />
               {exporting ? "Generating..." : "Export PDF"}
             </button>
 

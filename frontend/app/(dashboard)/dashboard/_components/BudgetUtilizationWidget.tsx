@@ -226,7 +226,7 @@ function SingleDeptView({ item }: { item: BudgetUtilization }) {
             <div className="mt-1 flex items-center gap-1">
               <TrendingDown size={11} style={{ color: "#006d4a" }} />
               <span className="text-xs font-medium" style={{ color: "#006d4a" }}>
-                Bulan berjalan
+                Current Month
               </span>
             </div>
           </div>
@@ -404,7 +404,7 @@ function AllDeptsView({ items }: { items: BudgetUtilization[] }) {
               <div className="mt-1 flex items-center gap-1">
                 <TrendingDown size={11} style={{ color: "#006d4a" }} />
                 <span className="text-xs font-medium" style={{ color: "#006d4a" }}>
-                  All departments
+                  All Departments
                 </span>
               </div>
             </div>
@@ -536,7 +536,7 @@ export default function BudgetUtilizationWidget({
             {title}
           </h2>
           <p className="mt-1 text-xs" style={{ color: "#566166" }}>
-            {isFinance 
+            {isFinance
               ? "Organization-wide fiscal budget utilization limits."
               : "Overview of your department's fiscal budget utilization limits."}
           </p>

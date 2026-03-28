@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ChevronLeft, Info, Loader2, SendHorizonal, X } from "lucide-react";
+import { AlertTriangle, ChevronLeft, Info, Loader2, SendHorizonal, X, Save } from "lucide-react";
 import { useCreatePO } from "@/lib/hooks/useCreatePO";
 import { useBudgetUtilization } from "@/lib/hooks/useBudgetUtilization";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -27,6 +27,7 @@ export default function CreatePOContent() {
     hasItems,
     amountValue,
     submit,
+    saveAsDraft,
     loading,
     error,
   } = useCreatePO();
@@ -71,15 +72,32 @@ export default function CreatePOContent() {
               Fill in the details to initiate a formal procurement request.
             </p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
-            style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
-          >
-            {loading && <Loader2 size={15} className="animate-spin" />}
-            Submit for Approval
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={saveAsDraft}
+              disabled={loading}
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-60"
+              style={{ 
+                backgroundColor: "#ffffff",
+                color: "#2a3439", 
+                border: "1px solid #d9e4ea",
+                boxShadow: "0 1px 2px rgba(42,52,57,0.04)",
+                fontFamily: FONT_MANROPE 
+              }}
+            >
+              <Save size={15} style={{ color: "#566166" }} />
+              Save as Draft
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              disabled={loading}
+              className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
+              style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
+            >
+              {loading && <Loader2 size={15} className="animate-spin" />}
+              Submit for Approval
+            </button>
+          </div>
         </div>
 
         {/* Error banner */}
@@ -143,15 +161,32 @@ export default function CreatePOContent() {
                   </span>
                 </div>
               </div>
-              <button
-                onClick={() => setShowModal(true)}
-                disabled={loading}
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
-                style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
-              >
-                {loading && <Loader2 size={15} className="animate-spin" />}
-                Submit for Approval
-              </button>
+              <div className="mt-6 flex flex-col gap-3">
+                <button
+                  onClick={saveAsDraft}
+                  disabled={loading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-60"
+                  style={{ 
+                    backgroundColor: "#ffffff",
+                    color: "#2a3439", 
+                    border: "1px solid #d9e4ea",
+                    boxShadow: "0 1px 2px rgba(42,52,57,0.04)",
+                    fontFamily: FONT_MANROPE 
+                  }}
+                >
+                  <Save size={15} style={{ color: "#566166" }} />
+                  Save as Draft
+                </button>
+                <button
+                  onClick={() => setShowModal(true)}
+                  disabled={loading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
+                  style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
+                >
+                  {loading && <Loader2 size={15} className="animate-spin" />}
+                  Submit for Approval
+                </button>
+              </div>
             </div>
 
             {/* Budget info */}

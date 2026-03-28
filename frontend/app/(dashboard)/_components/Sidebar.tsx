@@ -13,6 +13,7 @@ import {
   BarChart3,
   LogOut,
   Wallet,
+  Edit3,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { Role } from "@/types/auth";
@@ -27,6 +28,7 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
   REQUESTER: [
     { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
     { label: "New PO", href: "/po/new", Icon: Plus },
+    { label: "My Drafts", href: "/po/drafts", Icon: Edit3 },
     { label: "My POs", href: "/po", Icon: FileText },
   ],
   MANAGER: [
