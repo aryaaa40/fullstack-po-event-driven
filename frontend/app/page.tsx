@@ -5,12 +5,31 @@ import { ArrowRight, BarChart3, BellRing, Briefcase, FileText, Lock, ShieldCheck
 
 const FONT_MANROPE = "var(--font-manrope), Manrope, sans-serif";
 
+const customCss = `
+  @keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(1deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+  }
+  @keyframes scrollLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-scroll {
+    animation: scrollLeft 30s linear infinite;
+    display: flex;
+    width: max-content;
+  }
+`;
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#2a3439] font-sans selection:bg-[#0053db] selection:text-white">
-      {/* ─────────────────────────────────────────────────────────────
-          NAVBAR
-      ───────────────────────────────────────────────────────────── */}
+      <style>{customCss}</style>
+
       <nav className="fixed top-0 z-50 flex w-full items-center justify-between border-b border-[rgba(217,228,234,0.5)] bg-white/80 px-6 py-4 backdrop-blur-md md:px-12">
         <div className="flex items-center gap-2.5">
           <div
@@ -52,49 +71,61 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ─────────────────────────────────────────────────────────────
-          HERO SECTION
-      ───────────────────────────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center justify-center overflow-hidden px-6 pb-20 pt-48 text-center md:px-12 md:pt-56">
+      <section className="relative overflow-hidden px-6 pt-32 pb-16 md:px-12 md:pt-48 md:pb-24">
         {/* Abstract Background Blobs */}
-        <div className="absolute left-1/2 top-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-100/50 blur-3xl" />
-        <div className="absolute right-0 top-0 -z-10 h-[400px] w-[400px] rounded-full bg-purple-100/40 blur-3xl" />
+        <div className="absolute left-0 top-1/2 -z-10 h-[600px] w-[600px] -translate-y-1/2 rounded-full bg-blue-100/40 blur-3xl" />
+        <div className="absolute right-0 top-0 -z-10 h-[500px] w-[500px] rounded-full bg-purple-100/30 blur-3xl" />
 
-        <h1
-          className="max-w-4xl text-5xl font-extrabold tracking-tight text-[#2a3439] md:text-7xl md:leading-[1.1]"
-          style={{ fontFamily: FONT_MANROPE }}
-        >
-          Corporate Procurement, <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0053db] to-[#6750A4]">
-            Redefined with Precision.
-          </span>
-        </h1>
+        <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center gap-16">
 
-        <p className="mt-8 max-w-2xl text-lg text-[#566166] md:text-xl md:leading-relaxed">
-          Axon is an enterprise-grade Purchase Order System. Guaranteeing zero data loss with RabbitMQ message brokering and pushing real-time WebSocket approvals directly to your screen.
-        </p>
+          {/* Left: Copy & CTAs */}
+          <div className="flex-1 text-center md:text-left">
+            <h1
+              className="text-5xl font-extrabold tracking-tight text-[#2a3439] md:text-6xl md:leading-[1.15]"
+              style={{ fontFamily: FONT_MANROPE }}
+            >
+              Corporate Procurement, <br className="hidden md:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0053db] to-[#6750A4]">
+                Redefined with Precision.
+              </span>
+            </h1>
 
-        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
-          <Link
-            href="/login"
-            className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#2a3439] px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-black active:scale-95"
-            style={{ fontFamily: FONT_MANROPE }}
-          >
-            Launch Live Demo
-          </Link>
-          <a
-            href="#features"
-            className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-[#d9e4ea] bg-white px-8 text-base font-bold text-[#2a3439] shadow-sm transition-all hover:bg-gray-50 active:scale-95"
-            style={{ fontFamily: FONT_MANROPE }}
-          >
-            Explore Features
-          </a>
+            <p className="mt-6 max-w-xl mx-auto md:mx-0 text-lg text-[#566166] md:text-xl md:leading-relaxed">
+              Axon is an enterprise-grade Purchase Order System. Guaranteeing zero data loss with RabbitMQ brokering and pushing real-time WebSocket approvals directly to your screen.
+            </p>
+
+            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row md:justify-start">
+              <Link
+                href="/login"
+                className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#2a3439] px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-black active:scale-95"
+                style={{ fontFamily: FONT_MANROPE }}
+              >
+                Launch Live Demo
+              </Link>
+              <a
+                href="#features"
+                className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-[#d9e4ea] bg-white px-8 text-base font-bold text-[#2a3439] shadow-sm transition-all hover:bg-gray-50 active:scale-95"
+                style={{ fontFamily: FONT_MANROPE }}
+              >
+                Explore Features
+              </a>
+            </div>
+          </div>
+
+          {/* Right: Unsplash Image with Floating Animation */}
+          <div className="flex-1 w-full max-w-lg md:max-w-none relative animate-float">
+            {/* Decorative backing frame */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-blue-100 to-purple-100 translate-x-4 translate-y-4 -z-10" />
+            <img
+              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2000"
+              alt="Data Infrastructure and Logistics Analytics"
+              className="w-full rounded-3xl shadow-2xl border border-[rgba(255,255,255,0.4)] relative z-10"
+              style={{ minHeight: "350px", objectFit: "cover" }}
+            />
+          </div>
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          FEATURES (BENTO GRID)
-      ───────────────────────────────────────────────────────────── */}
       <section id="features" className="mx-auto max-w-7xl px-6 py-24 md:px-12">
         <div className="mb-16 text-center">
           <h2
@@ -163,9 +194,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          HOW IT WORKS (WORKFLOW)
-      ───────────────────────────────────────────────────────────── */}
       <section id="workflow" className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-6 md:px-12">
           <div className="mb-16 text-center">
@@ -223,9 +251,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          CTA SECTION
-      ───────────────────────────────────────────────────────────── */}
       <section className="bg-[#f8fafc] py-24">
         <div className="mx-auto max-w-5xl px-6 md:px-12 text-center">
           <h2
@@ -250,9 +275,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          FOOTER
-      ───────────────────────────────────────────────────────────── */}
       <footer className="border-t border-[rgba(217,228,234,0.5)] bg-white py-16">
         <div className="mx-auto max-w-7xl px-6 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -269,7 +291,7 @@ export default function LandingPage() {
                 Precision procurement system designed for the enterprise. Ensure compliance without compromising velocity.
               </p>
             </div>
-            
+
             <div className="col-span-1 border-l-0 md:border-l border-[rgba(217,228,234,0.5)] md:pl-12">
               <h4 className="text-sm font-bold uppercase tracking-wider text-[#2a3439] mb-4">Product</h4>
               <ul className="flex flex-col gap-3 text-sm text-[#566166]">
@@ -297,7 +319,7 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          
+
           <div className="mt-16 pt-8 border-t border-[rgba(217,228,234,0.5)] text-center text-sm text-[#8fa3ab]">
             © {new Date().getFullYear()} Axon Precision Systems, Inc. All rights reserved.
           </div>
