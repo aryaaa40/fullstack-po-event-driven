@@ -46,19 +46,29 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void seedUser(String username, String email, String password, Role role, String deptCode) {
-        if (userRepository.findByUsername(username).isEmpty()) {
-            Department dept = departmentRepository.findByCode(deptCode).orElse(null);
-            
-            User user = User.builder()
-                    .username(username)
-                    .email(email)
-                    .password(passwordEncoder.encode(password))
-                    .role(role)
-                    .department(dept)
-                    .build();
-            
-            userRepository.save(user);
-            log.info("Seeded user: {} with role: {}", username, role);
-        }
+        Department dept = departmentRepository.findByCode(deptCode).orElse(null);
+        
+        userRepository.findByUsername(username).ifPresentOrElse(
+            (existingUser) -> {
+                // Update department jika berbeda (agar demo flow lancar)
+                if (existingUser.getDepartment() == null || !existingUser.getDepartment().getCode().equals(deptCode)) {
+                    existingUser.setDepartment(dept);
+                    userRepository.save(existingUser);
+                    log.info("Updated existing user department: {} to {}", username, deptCode);
+                }
+            },
+            () -> {
+                // Buat baru jika belum ada
+                User user = User.builder()
+                        .username(username)
+                        .email(email)
+                        .password(passwordEncoder.encode(password))
+                        .role(role)
+                        .department(dept)
+                        .build();
+                userRepository.save(user);
+                log.info("Seeded new user: {} with role: {}", username, role);
+            }
+        );
     }
 }
