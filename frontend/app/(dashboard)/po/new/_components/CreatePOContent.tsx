@@ -35,6 +35,7 @@ export default function CreatePOContent() {
   const { departmentId, departmentName } = useAuthStore();
   const { utilization } = useBudgetUtilization();
   const myBudget = utilization.find((u) => u.department.id === departmentId) ?? null;
+  const isNoBudget = myBudget === null;
   const isOverBudget = myBudget !== null && amountValue > myBudget.available;
 
   const [showModal, setShowModal] = useState(false);
@@ -75,8 +76,8 @@ export default function CreatePOContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={saveAsDraft}
-              disabled={loading}
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-60"
+              disabled={loading || isNoBudget}
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
               style={{ 
                 backgroundColor: "#ffffff",
                 color: "#2a3439", 
@@ -90,8 +91,8 @@ export default function CreatePOContent() {
             </button>
             <button
               onClick={() => setShowModal(true)}
-              disabled={loading}
-              className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
+              disabled={loading || isNoBudget}
+              className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
             >
               {loading && <Loader2 size={15} className="animate-spin" />}
@@ -99,6 +100,27 @@ export default function CreatePOContent() {
             </button>
           </div>
         </div>
+
+        {/* No Budget banner */}
+        {isNoBudget && (
+          <div
+            className="flex items-start gap-4 rounded-xl px-6 py-4"
+            style={{
+              backgroundColor: "#fff7f6",
+              color: "#9f403d",
+              border: "1px solid rgba(159,64,61,0.2)",
+            }}
+          >
+            <AlertTriangle size={20} className="shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-1">
+              <p className="font-bold">Budget Restricted</p>
+              <p className="text-sm leading-relaxed opacity-90">
+                Your department ({departmentName}) does not have an allocated budget for fiscal year {new Date().getFullYear()}. 
+                PO creation is disabled until a budget is set by the Finance department.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Error banner */}
         {error && (
@@ -164,8 +186,8 @@ export default function CreatePOContent() {
               <div className="mt-6 flex flex-col gap-3">
                 <button
                   onClick={saveAsDraft}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-60"
+                  disabled={loading || isNoBudget}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{ 
                     backgroundColor: "#ffffff",
                     color: "#2a3439", 
@@ -179,8 +201,8 @@ export default function CreatePOContent() {
                 </button>
                 <button
                   onClick={() => setShowModal(true)}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
+                  disabled={loading || isNoBudget}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{ backgroundColor: "#0053db", color: "#f8f7ff", fontFamily: FONT_MANROPE }}
                 >
                   {loading && <Loader2 size={15} className="animate-spin" />}

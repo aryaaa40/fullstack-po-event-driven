@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { TrendingDown } from "lucide-react";
+import { TrendingDown, AlertTriangle } from "lucide-react";
 import { BudgetUtilization } from "@/types/po";
 import { Role } from "@/types/auth";
 
@@ -569,9 +569,20 @@ export default function BudgetUtilizationWidget({
       ) : myItem ? (
         <SingleDeptView item={myItem} />
       ) : (
-        <p className="text-xs" style={{ color: "#9ca3af" }}>
-          No budget set for your department in {fiscalYear}.
-        </p>
+        <div 
+          className="flex flex-col items-center justify-center rounded-xl border border-dashed py-8 px-6 text-center"
+          style={{ borderColor: "#d9e4ea", backgroundColor: "#fafcfd" }}
+        >
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#fff7f6]">
+            <AlertTriangle size={20} style={{ color: "#9f403d" }} />
+          </div>
+          <p className="max-w-[280px] text-xs font-semibold leading-relaxed" style={{ color: "#2a3439" }}>
+            Your department does not have an allocated budget for fiscal year {fiscalYear}.
+          </p>
+          <p className="mt-1.5 max-w-[250px] text-[11px] leading-relaxed" style={{ color: "#566166" }}>
+            You cannot create a Purchase Order until a budget is set by the Finance department.
+          </p>
+        </div>
       )}
     </div>
   );
