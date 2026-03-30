@@ -23,4 +23,10 @@ jobs:
             cd backend
             docker build -t po-backend .
             docker rm -f po-backend || true
-            docker run -d --name po-backend --env-file .env -p 8080:8080 --restart always po-backend
+            docker run -d \
+              --name po-backend \
+              --env-file .env \
+              -e "JAVA_OPTS=-Xmx512m -Xms256m" \
+              -p 8080:8080 \
+              --restart always \
+              po-backend
