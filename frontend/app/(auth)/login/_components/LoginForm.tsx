@@ -33,8 +33,8 @@ export default function LoginForm() {
   const justRegistered = searchParams.get("registered") === "true";
 
   const [selectedRole, setSelectedRole] = useState<Role>("REQUESTER");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState(ROLE_CREDENTIALS.REQUESTER.username);
+  const [password, setPassword] = useState(ROLE_CREDENTIALS.REQUESTER.password);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
