@@ -1,11 +1,15 @@
 package com.example.SpringEventDriven.config;
 
 import com.example.SpringEventDriven.entity.Department;
+import com.example.SpringEventDriven.entity.Role;
+import com.example.SpringEventDriven.entity.User;
 import com.example.SpringEventDriven.repository.DepartmentRepository;
+import com.example.SpringEventDriven.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,21 +20,45 @@ import java.util.List;
 public class DataInitializer implements ApplicationRunner {
 
     private final DepartmentRepository departmentRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(ApplicationArguments args) {
-        if (departmentRepository.count() > 0) return;
+        // 1. Seed Departments
+        if (departmentRepository.count() == 0) {
+            List<Department> departments = List.of(
+                    Department.builder().name("Engineering").code("ENG").description("Software & IT Engineering").build(),
+                    Department.builder().name("Finance").code("FIN").description("Finance & Accounting").build(),
+                    Department.builder().name("Human Resources").code("HR").description("HR & People Operations").build(),
+                    Department.builder().name("Marketing").code("MKT").description("Marketing & Communications").build(),
+                    Department.builder().name("Operations").code("OPS").description("Business Operations").build(),
+                    Department.builder().name("Logistics").code("LOG").description("Supply Chain & Logistics").build()
+            );
+            departmentRepository.saveAll(departments);
+            log.info("Seeded 6 departments");
+        }
 
-        List<Department> departments = List.of(
-                Department.builder().name("Engineering").code("ENG").description("Software & IT Engineering").build(),
-                Department.builder().name("Finance").code("FIN").description("Finance & Accounting").build(),
-                Department.builder().name("Human Resources").code("HR").description("HR & People Operations").build(),
-                Department.builder().name("Marketing").code("MKT").description("Marketing & Communications").build(),
-                Department.builder().name("Operations").code("OPS").description("Business Operations").build(),
-                Department.builder().name("Logistics").code("LOG").description("Supply Chain & Logistics").build()
-        );
+        // 2. Seed Demo Users
+        seedUser("requesterpub", "requester@example.com", "requester123", Role.REQUESTER, "ENG");
+        seedUser("managerpub", "manager@example.com", "manager123", Role.MANAGER, "HR");
+        seedUser("financepub", "finance@example.com", "finance123", Role.FINANCE, "FIN");
+    }
 
-        departmentRepository.saveAll(departments);
-        log.info("Seeded {} departments", departments.size());
+    private void seedUser(String username, String email, String password, Role role, String deptCode) {
+        if (userRepository.findByUsername(username).isEmpty()) {
+            Department dept = departmentRepository.findByCode(deptCode).orElse(null);
+            
+            User user = User.builder()
+                    .username(username)
+                    .email(email)
+                    .password(passwordEncoder.encode(password))
+                    .role(role)
+                    .department(dept)
+                    .build();
+            
+            userRepository.save(user);
+            log.info("Seeded user: {} with role: {}", username, role);
+        }
     }
 }
