@@ -1,8 +1,10 @@
 package com.example.SpringEventDriven.config;
 
+import com.example.SpringEventDriven.entity.Budget;
 import com.example.SpringEventDriven.entity.Department;
 import com.example.SpringEventDriven.entity.Role;
 import com.example.SpringEventDriven.entity.User;
+import com.example.SpringEventDriven.repository.BudgetRepository;
 import com.example.SpringEventDriven.repository.DepartmentRepository;
 import com.example.SpringEventDriven.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -21,6 +24,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
+    private final BudgetRepository budgetRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -38,6 +42,19 @@ public class DataInitializer implements CommandLineRunner {
             );
             departmentRepository.saveAll(departments);
             log.info("Seeded 6 departments");
+        }
+
+        // 1b. Seed Budget for Engineering (to allow demo POs)
+        if (budgetRepository.count() == 0) {
+            Department eng = departmentRepository.findByCode("ENG")
+                    .orElseThrow(() -> new RuntimeException("ENG department not found"));
+            
+            budgetRepository.save(Budget.builder()
+                    .department(eng)
+                    .fiscalYear(LocalDate.now().getYear())
+                    .totalAmount(new java.math.BigDecimal("1000000000")) // 1 Miliar
+                    .createdBy("SYSTEM")
+                    .build());
         }
 
         // 2. Seed Demo Users
