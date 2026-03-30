@@ -14,6 +14,7 @@ import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
 import com.example.SpringEventDriven.entity.Role;
 import com.example.SpringEventDriven.entity.User;
 import com.example.SpringEventDriven.event.PurchaseOrderEvent;
+import com.example.SpringEventDriven.repository.BudgetRepository;
 import com.example.SpringEventDriven.repository.DepartmentRepository;
 import com.example.SpringEventDriven.repository.PurchaseOrderRepository;
 import com.example.SpringEventDriven.service.PurchaseOrderEventPublisher;
@@ -44,6 +45,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final DepartmentRepository departmentRepository;
+    private final BudgetRepository budgetRepository;
     private final PurchaseOrderEventPublisher eventPublisher;
 
     private static final int MAX_PAGE_SIZE = 50;
@@ -80,6 +82,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
+
+        // VALIDATION: Ensure department has a budget for the current fiscal year
+        int currentYear = LocalDate.now().getYear();
+        boolean budgetExists = budgetRepository.findByDepartmentIdAndFiscalYearAndFiscalMonthIsNull(
+                department.getId(), currentYear).isPresent();
+
+        if (!budgetExists) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Your department does not have an allocated budget for fiscal year " + currentYear +
+                    ". Please contact the Finance department to set a budget before creating a Purchase Order.");
+        }
 
         PurchaseOrder po = PurchaseOrder.builder()
                 .title(request.getTitle())
