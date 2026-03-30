@@ -41,7 +41,7 @@ public class DataInitializer implements ApplicationRunner {
 
         // 2. Seed Demo Users
         seedUser("requesterpub", "requester@example.com", "requester123", Role.REQUESTER, "ENG");
-        seedUser("managerpub", "manager@example.com", "manager123", Role.MANAGER, "HR");
+        seedUser("managerpub", "manager@example.com", "manager123", Role.MANAGER, "ENG");
         seedUser("financepub", "finance@example.com", "finance123", Role.FINANCE, "FIN");
     }
 
