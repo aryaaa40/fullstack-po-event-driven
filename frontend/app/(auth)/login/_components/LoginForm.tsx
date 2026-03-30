@@ -14,9 +14,9 @@ type RoleOption = {
 };
 
 const ROLE_CREDENTIALS: Record<Role, { username: string; password: string }> = {
-  REQUESTER: { username: "hrrequester", password: "hr123456" },
-  MANAGER: { username: "hrmanager", password: "hr123456" },
-  FINANCE: { username: "financebudget", password: "finance123" },
+  REQUESTER: { username: "requesterpub", password: "requester123" },
+  MANAGER: { username: "managerpub", password: "manager123" },
+  FINANCE: { username: "financepub", password: "finance123" },
 };
 
 const ROLES: RoleOption[] = [
