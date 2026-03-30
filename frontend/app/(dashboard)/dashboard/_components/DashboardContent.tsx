@@ -24,17 +24,17 @@ const CURRENT_YEAR = new Date().getFullYear();
 export default function DashboardContent() {
   const { username, role, departmentId, departmentName } = useAuthStore();
   const { pos, loading, error, refetch } = useDashboardPOs();
-  const { notifications } = usePONotification();
+  const { latestEvent } = usePONotification();
   const { activities, loading: actLoading, refetch: refetchActivity } = useRecentActivity();
   const { utilization, loading: budgetLoading } = useBudgetUtilization(CURRENT_YEAR);
 
-  // Auto-refetch tabel dan recent activity saat ada event WebSocket masuk
+  // Auto-refetch tabel dan recent activity hanya saat ada event WebSocket REAL-TIME masuk
   useEffect(() => {
-    if (notifications.length > 0) {
+    if (latestEvent) {
       refetch();
       refetchActivity();
     }
-  }, [notifications.length, refetch, refetchActivity]);
+  }, [latestEvent, refetch, refetchActivity]);
 
   if (!role) return null;
 

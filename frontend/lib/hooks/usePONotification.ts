@@ -62,6 +62,7 @@ export function usePONotification() {
   const username = useAuthStore((s) => s.username);
   const role = useAuthStore((s) => s.role);
   const [notifications, setNotifications] = useState<PONotification[]>([]);
+  const [latestEvent, setLatestEvent] = useState<POEventPayload | null>(null);
   const clientRef = useRef<Client | null>(null);
 
   // Fetch actual historical notifications from Database on mount
@@ -93,6 +94,7 @@ export function usePONotification() {
 
           if (!isRelevantForUser(payload, role, username)) return;
 
+          // Update general notification list
           setNotifications((prev) => [
             {
               id: `${payload.poId}-${payload.timestamp}`,
@@ -101,6 +103,9 @@ export function usePONotification() {
             },
             ...prev,
           ]);
+
+          // Trigger real-time event update for dashboard refresh
+          setLatestEvent(payload);
         });
       },
 
@@ -135,5 +140,5 @@ export function usePONotification() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  return { notifications, unreadCount, markAllRead };
+  return { notifications, unreadCount, latestEvent, markAllRead };
 }
