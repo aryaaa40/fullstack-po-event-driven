@@ -36,10 +36,11 @@ const VIEW_ACTION_HREF: Record<Role, string> = {
 interface Props {
   username: string;
   role: Role;
+  departmentName: string | null;
   pos: PurchaseOrder[];
 }
 
-export default function WelcomeCard({ username, role, pos }: Props) {
+export default function WelcomeCard({ username, role, departmentName, pos }: Props) {
   const actionCount = pos.filter((p) => p.status === ACTION_STATUS[role]).length;
 
   return (
@@ -61,15 +62,29 @@ export default function WelcomeCard({ username, role, pos }: Props) {
         </div>
 
         {/* Headline */}
-        <h1
-          className="text-3xl font-extrabold"
-          style={{
-            color: "#2a3439",
-            fontFamily: "var(--font-manrope), Manrope, sans-serif",
-          }}
-        >
-          Welcome back, {username}.
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1
+            className="text-3xl font-extrabold"
+            style={{
+              color: "#2a3439",
+              fontFamily: "var(--font-manrope), Manrope, sans-serif",
+            }}
+          >
+            Welcome back, {username}.
+          </h1>
+          {departmentName && (
+            <span
+              className="rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wider"
+              style={{
+                backgroundColor: "#f0f7ff",
+                color: "#0053db",
+                borderColor: "rgba(0,83,219,0.1)",
+              }}
+            >
+              {departmentName.toUpperCase()}
+            </span>
+          )}
+        </div>
 
         {/* Subtext */}
         <p className="text-sm" style={{ color: "#566166" }}>

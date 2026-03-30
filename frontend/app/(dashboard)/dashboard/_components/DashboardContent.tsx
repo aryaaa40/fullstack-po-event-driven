@@ -22,7 +22,7 @@ const TABLE_TITLE: Record<Role, string> = {
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function DashboardContent() {
-  const { username, role, departmentId } = useAuthStore();
+  const { username, role, departmentId, departmentName } = useAuthStore();
   const { pos, loading, error, refetch } = useDashboardPOs();
   const { notifications } = usePONotification();
   const { activities, loading: actLoading, refetch: refetchActivity } = useRecentActivity();
@@ -40,7 +40,12 @@ export default function DashboardContent() {
 
   return (
     <div className="flex flex-col gap-5">
-      <WelcomeCard username={username ?? ""} role={role} pos={pos} />
+      <WelcomeCard
+        username={username ?? ""}
+        role={role}
+        departmentName={departmentName}
+        pos={pos}
+      />
       <StatCards pos={pos} role={role} />
       <POTable
         pos={pos}

@@ -53,7 +53,7 @@ const ROLE_LABEL: Record<Role, string> = {
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { role, username, logout } = useAuthStore();
+  const { role, username, departmentName, logout } = useAuthStore();
 
   function handleLogout() {
     logout();
@@ -149,9 +149,19 @@ export default function Sidebar() {
             >
               {username}
             </p>
-            <p className="text-xs" style={{ color: "#566166" }}>
-              {role ? ROLE_LABEL[role] : ""}
-            </p>
+            <div className="flex flex-col">
+              <p className="text-[11px] font-medium" style={{ color: "#566166" }}>
+                {role ? ROLE_LABEL[role] : ""}
+              </p>
+              {departmentName && (
+                <p
+                  className="truncate text-[9px] font-bold uppercase tracking-tight"
+                  style={{ color: "#9ca3af" }}
+                >
+                  {departmentName}
+                </p>
+              )}
+            </div>
           </div>
           <button
             onClick={handleLogout}
