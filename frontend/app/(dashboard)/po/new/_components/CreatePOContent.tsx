@@ -33,10 +33,10 @@ export default function CreatePOContent() {
   } = useCreatePO();
 
   const { departmentId, departmentName } = useAuthStore();
-  const { utilization } = useBudgetUtilization();
+  const { utilization, loading: isBudgetLoading } = useBudgetUtilization();
   const myBudget = utilization.find((u) => u.department.id === departmentId) ?? null;
-  const isNoBudget = myBudget === null;
-  const isOverBudget = myBudget !== null && amountValue > myBudget.available;
+  const isNoBudget = !isBudgetLoading && myBudget === null;
+  const isOverBudget = !isBudgetLoading && myBudget !== null && amountValue > myBudget.available;
 
   const [showModal, setShowModal] = useState(false);
 
@@ -268,6 +268,11 @@ export default function CreatePOContent() {
                       </div>
                     )}
                   </>
+                ) : isBudgetLoading ? (
+                  <div className="flex animate-pulse flex-col gap-2">
+                    <div className="h-4 w-full rounded bg-gray-100" />
+                    <div className="h-4 w-3/4 rounded bg-gray-100" />
+                  </div>
                 ) : (
                   <p className="text-xs" style={{ color: "#9ca3af" }}>
                     No budget set for this department in {new Date().getFullYear()}.
