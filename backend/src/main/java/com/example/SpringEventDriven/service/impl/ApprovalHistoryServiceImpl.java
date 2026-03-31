@@ -80,8 +80,13 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
             // REQUESTER hanya lihat aktivitas di PO miliknya sendiri
             histories = approvalHistoryRepository
                     .findTop10ByPurchaseOrder_CreatedBy_IdOrderByCreatedAtDesc(currentUser.getId());
+        } else if (currentUser.getRole() == Role.MANAGER) {
+            // MANAGER hanya lihat aktivitas di PO departemen miliknya sendiri
+            Long deptId = currentUser.getDepartment().getId();
+            histories = approvalHistoryRepository
+                    .findTop10ByPurchaseOrder_Department_IdOrderByCreatedAtDesc(deptId);
         } else {
-            // MANAGER dan FINANCE lihat semua aktivitas
+            // FINANCE lihat semua aktivitas
             histories = approvalHistoryRepository.findTop10ByOrderByCreatedAtDesc();
         }
 

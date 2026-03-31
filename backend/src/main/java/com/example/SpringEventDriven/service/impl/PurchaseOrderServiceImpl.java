@@ -299,9 +299,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     private void publishEvent(PurchaseOrder po, String actorUsername, PurchaseOrderStatus fromStatus) {
         try {
+            Long deptId = po.getDepartment() != null ? po.getDepartment().getId() : null;
             eventPublisher.publishStatusChanged(
                     PurchaseOrderEvent.builder()
                             .poId(po.getId())
+                            .departmentId(deptId)
                             .fromStatus(fromStatus)
                             .newStatus(po.getStatus())
                             .actorUsername(actorUsername)

@@ -17,6 +17,10 @@ public interface ApprovalHistoryRepository extends JpaRepository<ApprovalHistory
     @EntityGraph(attributePaths = {"purchaseOrder", "purchaseOrder.createdBy"})
     List<ApprovalHistory> findTop10ByOrderByCreatedAtDesc();
 
+    // Untuk recent activity — MANAGER (hanya PO departemennya sendiri)
+    @EntityGraph(attributePaths = {"purchaseOrder", "purchaseOrder.createdBy"})
+    List<ApprovalHistory> findTop10ByPurchaseOrder_Department_IdOrderByCreatedAtDesc(Long departmentId);
+
     // Untuk recent activity — REQUESTER (hanya PO miliknya sendiri)
     @EntityGraph(attributePaths = {"purchaseOrder", "purchaseOrder.createdBy"})
     List<ApprovalHistory> findTop10ByPurchaseOrder_CreatedBy_IdOrderByCreatedAtDesc(Long userId);

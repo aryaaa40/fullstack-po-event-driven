@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class PurchaseOrderEvent {
 
     private Long poId;
+    private Long departmentId; // department ID dari PO terkait (untuk filtering FE)
     private PurchaseOrderStatus fromStatus; // status sebelum perubahan (null jika baru dibuat)
     private PurchaseOrderStatus newStatus;
     private String actorUsername;
