@@ -45,16 +45,19 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // 1b. Seed Budget for Engineering (to allow demo POs)
-        if (budgetRepository.count() == 0) {
-            Department eng = departmentRepository.findByCode("ENG")
-                    .orElseThrow(() -> new RuntimeException("ENG department not found"));
-            
-            budgetRepository.save(Budget.builder()
-                    .department(eng)
-                    .fiscalYear(LocalDate.now().getYear())
-                    .totalAmount(new java.math.BigDecimal("1000000000")) // 1 Miliar
-                    .createdBy("SYSTEM")
-                    .build());
+        Department eng = departmentRepository.findByCode("ENG").orElse(null);
+        if (eng != null) {
+            int currentYear = LocalDate.now().getYear();
+            boolean hasBudget = budgetRepository.findByDepartmentIdAndFiscalYearAndFiscalMonthIsNull(eng.getId(), currentYear).isPresent();
+            if (!hasBudget) {
+                budgetRepository.save(Budget.builder()
+                        .department(eng)
+                        .fiscalYear(currentYear)
+                        .totalAmount(new java.math.BigDecimal("1000000000")) // 1 Miliar
+                        .createdBy("SYSTEM")
+                        .build());
+                log.info("Seeded 1 Miliar budget for ENG department for year {}", currentYear);
+            }
         }
 
         // 2. Seed Demo Users

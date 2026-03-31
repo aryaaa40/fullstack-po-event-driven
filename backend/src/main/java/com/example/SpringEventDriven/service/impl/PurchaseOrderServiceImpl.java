@@ -80,8 +80,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
             totalAmount = request.getAmount();
         }
 
-        Department department = departmentRepository.findById(request.getDepartmentId())
+        // Priority: Use department from currentUser if available, otherwise from request
+        Department department = currentUser.getDepartment();
+        if (department == null && request.getDepartmentId() != null) {
+            department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
+        }
+
+        if (department == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User department not found. Please ensure your profile is assigned to a department.");
+        }
 
         // VALIDATION: Ensure department has a budget for the current fiscal year
         int currentYear = LocalDate.now().getYear();
@@ -90,8 +98,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         if (!budgetExists) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Your department does not have an allocated budget for fiscal year " + currentYear +
-                    ". Please contact the Finance department to set a budget before creating a Purchase Order.");
+                    "Department [" + department.getName() + "] does not have an allocated budget for fiscal year " + currentYear +
+                    ". Technical Note: Please check Budget table in DB for year " + currentYear);
         }
 
         PurchaseOrder po = PurchaseOrder.builder()
@@ -290,15 +298,19 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     private void publishEvent(PurchaseOrder po, String actorUsername, PurchaseOrderStatus fromStatus) {
-        eventPublisher.publishStatusChanged(
-                PurchaseOrderEvent.builder()
-                        .poId(po.getId())
-                        .fromStatus(fromStatus)
-                        .newStatus(po.getStatus())
-                        .actorUsername(actorUsername)
-                        .requesterUsername(po.getCreatedBy().getUsername())
-                        .timestamp(LocalDateTime.now())
-                        .build()
-        );
+        try {
+            eventPublisher.publishStatusChanged(
+                    PurchaseOrderEvent.builder()
+                            .poId(po.getId())
+                            .fromStatus(fromStatus)
+                            .newStatus(po.getStatus())
+                            .actorUsername(actorUsername)
+                            .requesterUsername(po.getCreatedBy().getUsername())
+                            .timestamp(LocalDateTime.now())
+                            .build()
+            );
+        } catch (Exception e) {
+            // Log exception, but do not rollback transaction if RabbitMQ fails
+        }
     }
 }

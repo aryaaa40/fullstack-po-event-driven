@@ -21,9 +21,16 @@ public class AnalyticsController {
 
     @GetMapping
     public ResponseEntity<AnalyticsDTO> getDashboardAnalytics(Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String principal = authentication.getName();
+        System.out.println("[AnalyticsController] Menerima request untuk: " + principal);
         
+        // Coba cari berdasarkan username (karena token subject adalah username)
+        // Jika gagal, coba berdasarkan email
+        User user = userRepository.findByUsername(principal)
+                .or(() -> userRepository.findByEmail(principal))
+                .orElseThrow(() -> new RuntimeException("DEBUG_USER_NOT_FOUND: [" + principal + "]. Silakan Logout & Login ulang."));
+        
+        System.out.println("[AnalyticsController] User ditemukan: " + user.getUsername() + " | Role: " + user.getRole());
         return ResponseEntity.ok(analyticsService.getDashboardAnalytics(user));
     }
 }

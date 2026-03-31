@@ -22,7 +22,17 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public AnalyticsDTO getDashboardAnalytics(User user) {
         boolean isFinance = user.getRole() == Role.FINANCE;
-        Long deptId = user.getDepartment().getId();
+        Long deptId = (user.getDepartment() != null) ? user.getDepartment().getId() : null;
+
+        if (!isFinance && deptId == null) {
+            // Safe fallback 
+            return AnalyticsDTO.builder()
+                    .summary(AnalyticsDTO.SummaryData.builder()
+                            .totalOrders(0).approvedOrders(0).totalSpend(BigDecimal.ZERO).build())
+                    .categoryDistribution(java.util.Collections.emptyList())
+                    .monthlyTrend(java.util.Collections.emptyList())
+                    .build();
+        }
 
         // 1. Summary Data
         AnalyticsDTO.SummaryData summary = buildSummary(isFinance, deptId);
@@ -33,7 +43,7 @@ public class AnalyticsService {
                 : poRepository.getSpendingByCategoryAndDepartment(deptId);
         
         List<AnalyticsDTO.CategoryData> categoryData = categoryRaw.stream()
-                .map(obj -> new AnalyticsDTO.CategoryData((String) obj[0], (BigDecimal) obj[1]))
+                .map(obj -> new AnalyticsDTO.CategoryData(String.valueOf(obj[0]), toBigDecimal(obj[1])))
                 .collect(Collectors.toList());
 
         // 3. Monthly Trend
@@ -42,7 +52,7 @@ public class AnalyticsService {
                 : poRepository.getMonthlySpendingTrendByDepartment(deptId);
         
         List<AnalyticsDTO.MonthlyData> monthlyData = monthlyRaw.stream()
-                .map(obj -> new AnalyticsDTO.MonthlyData((String) obj[0], (BigDecimal) obj[1]))
+                .map(obj -> new AnalyticsDTO.MonthlyData(String.valueOf(obj[0]), toBigDecimal(obj[1])))
                 .collect(Collectors.toList());
 
         return AnalyticsDTO.builder()
@@ -65,5 +75,12 @@ public class AnalyticsService {
                 .approvedOrders(approvedOrders)
                 .totalSpend(totalSpend != null ? totalSpend : BigDecimal.ZERO)
                 .build();
+    }
+
+    private BigDecimal toBigDecimal(Object obj) {
+        if (obj == null) return BigDecimal.ZERO;
+        if (obj instanceof BigDecimal) return (BigDecimal) obj;
+        if (obj instanceof Number) return new BigDecimal(((Number) obj).toString());
+        return BigDecimal.ZERO;
     }
 }
