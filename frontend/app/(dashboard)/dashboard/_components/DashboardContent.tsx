@@ -9,6 +9,7 @@ import { Role } from "@/types/auth";
 import { useRecentActivity } from "@/lib/hooks/useRecentActivity";
 import WelcomeCard from "./WelcomeCard";
 import StatCards from "./StatCards";
+import AnalyticsOverview from "./AnalyticsOverview";
 import POTable from "./POTable";
 import RecentActivity from "./RecentActivity";
 import BudgetUtilizationWidget from "./BudgetUtilizationWidget";
@@ -47,6 +48,10 @@ export default function DashboardContent() {
         pos={pos}
       />
       <StatCards pos={pos} role={role} />
+      
+      {/* Analytics Charts Section */}
+      <AnalyticsOverview />
+
       <POTable
         pos={pos}
         loading={loading}
