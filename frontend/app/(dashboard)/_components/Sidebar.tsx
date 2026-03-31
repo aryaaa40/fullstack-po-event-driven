@@ -9,7 +9,6 @@ import {
   Clock,
   CheckSquare,
   List,
-  Settings,
   BarChart3,
   LogOut,
   Wallet,
@@ -114,20 +113,6 @@ export default function Sidebar() {
             </Link>
           );
         })}
-
-        {/* Settings */}
-        <Link
-          href="/settings"
-          className="mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
-          style={{
-            backgroundColor:
-              pathname === "/settings" ? "#ffffff" : "transparent",
-            color: pathname === "/settings" ? "#0053db" : "#566166",
-          }}
-        >
-          <Settings size={18} strokeWidth={1.8} />
-          Settings
-        </Link>
       </nav>
 
       {/* User card */}
