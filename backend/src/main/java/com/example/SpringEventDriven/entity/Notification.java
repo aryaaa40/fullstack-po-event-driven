@@ -18,6 +18,7 @@ public class Notification {
     private Long id;
 
     private Long poId;
+    private Long departmentId;
 
     @Enumerated(EnumType.STRING)
     private PurchaseOrderStatus newStatus;

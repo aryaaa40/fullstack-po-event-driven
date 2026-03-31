@@ -20,10 +20,7 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications(@AuthenticationPrincipal User currentUser) {
-        List<NotificationResponse> notifications = notificationService.getNotificationsForUser(
-                currentUser.getRole().name(),
-                currentUser.getUsername()
-        );
+        List<NotificationResponse> notifications = notificationService.getNotificationsForUser(currentUser);
 
         return ResponseEntity.ok(ApiResponse.<List<NotificationResponse>>builder()
                 .status(200)
@@ -34,10 +31,7 @@ public class NotificationController {
 
     @PatchMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(@AuthenticationPrincipal User currentUser) {
-        notificationService.markAllAsRead(
-                currentUser.getRole().name(),
-                currentUser.getUsername()
-        );
+        notificationService.markAllAsRead(currentUser);
 
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .status(200)

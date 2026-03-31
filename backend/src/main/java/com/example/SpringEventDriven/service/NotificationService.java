@@ -3,6 +3,7 @@ package com.example.SpringEventDriven.service;
 import com.example.SpringEventDriven.dto.response.NotificationResponse;
 import com.example.SpringEventDriven.entity.Notification;
 import com.example.SpringEventDriven.entity.PurchaseOrderStatus;
+import com.example.SpringEventDriven.entity.User;
 import com.example.SpringEventDriven.event.PurchaseOrderEvent;
 import com.example.SpringEventDriven.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class NotificationService {
     private void saveNotification(PurchaseOrderEvent event, String role, String username) {
         Notification notification = Notification.builder()
                 .poId(event.getPoId())
+                .departmentId(event.getDepartmentId())
                 .newStatus(event.getNewStatus())
                 .actorUsername(event.getActorUsername())
                 .requesterUsername(event.getRequesterUsername())
@@ -55,8 +57,18 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public List<NotificationResponse> getNotificationsForUser(String role, String username) {
+    public List<NotificationResponse> getNotificationsForUser(User currentUser) {
+        String role = currentUser.getRole().name();
+        String username = currentUser.getUsername();
+        Long deptId = currentUser.getDepartment() != null ? currentUser.getDepartment().getId() : null;
+
         List<Notification> notifications = notificationRepository.findRelevantNotifications(role, username);
+        
+        if ("MANAGER".equals(role) && deptId != null) {
+            notifications = notifications.stream()
+                .filter(n -> deptId.equals(n.getDepartmentId()))
+                .collect(Collectors.toList());
+        }
         
         return notifications.stream().map(n -> NotificationResponse.builder()
                 .id(n.getId().toString())
@@ -71,8 +83,19 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAllAsRead(String role, String username) {
+    public void markAllAsRead(User currentUser) {
+        String role = currentUser.getRole().name();
+        String username = currentUser.getUsername();
+        Long deptId = currentUser.getDepartment() != null ? currentUser.getDepartment().getId() : null;
+
         List<Notification> notifications = notificationRepository.findRelevantNotifications(role, username);
+        
+        if ("MANAGER".equals(role) && deptId != null) {
+            notifications = notifications.stream()
+                .filter(n -> deptId.equals(n.getDepartmentId()))
+                .collect(Collectors.toList());
+        }
+
         for (Notification n : notifications) {
             if (!n.isRead()) {
                 n.setRead(true);
