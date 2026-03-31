@@ -18,6 +18,7 @@ export interface PONotification {
 
 interface POEventPayload {
   poId: number;
+  departmentId: number | null;
   newStatus: string;
   actorUsername: string;
   requesterUsername: string;
@@ -26,22 +27,16 @@ interface POEventPayload {
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "http://localhost:8080/ws";
 
-/**
- * Filter: apakah notifikasi ini relevan untuk user yang sedang login?
- *
- * MANAGER   → dapat notif hanya saat newStatus = PENDING (ada PO baru dari requester)
- * FINANCE   → dapat notif hanya saat newStatus = MANAGER_APPROVED (siap final approval)
- * REQUESTER → dapat notif hanya untuk PO miliknya, dan hanya saat status berubah
- *             (MANAGER_APPROVED / FINANCE_APPROVED / REJECTED)
- */
+
 function isRelevantForUser(
   payload: POEventPayload,
   role: string,
   username: string,
+  userDepartmentId: number | null
 ): boolean {
   switch (role) {
     case "MANAGER":
-      return payload.newStatus === "PENDING";
+      return payload.newStatus === "PENDING" && payload.departmentId === userDepartmentId;
 
     case "FINANCE":
       return payload.newStatus === "MANAGER_APPROVED";
@@ -61,6 +56,7 @@ export function usePONotification() {
   const token = useAuthStore((s) => s.token);
   const username = useAuthStore((s) => s.username);
   const role = useAuthStore((s) => s.role);
+  const departmentId = useAuthStore((s) => s.departmentId);
   const [notifications, setNotifications] = useState<PONotification[]>([]);
   const [latestEvent, setLatestEvent] = useState<POEventPayload | null>(null);
   const clientRef = useRef<Client | null>(null);
@@ -92,7 +88,7 @@ export function usePONotification() {
 
           const payload = JSON.parse(message.body) as POEventPayload;
 
-          if (!isRelevantForUser(payload, role, username)) return;
+          if (!isRelevantForUser(payload, role, username, departmentId)) return;
 
           // Update general notification list
           setNotifications((prev) => [
@@ -126,7 +122,7 @@ export function usePONotification() {
     return () => {
       stompClient.deactivate();
     };
-  }, [token, username, role]);
+  }, [token, username, role, departmentId]);
 
   const markAllRead = async () => {
     try {
