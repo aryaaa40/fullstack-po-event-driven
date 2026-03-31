@@ -57,6 +57,7 @@ export default function LandingPage() {
         <div className="hidden gap-8 text-sm font-semibold text-[#566166] md:flex">
           <a href="#features" className="hover:text-[#0053db] transition-colors">Features</a>
           <a href="#workflow" className="hover:text-[#0053db] transition-colors">Workflow</a>
+          <a href="#demo-guide" className="hover:text-[#0053db] transition-colors">Testing Guide</a>
         </div>
 
         <div className="flex items-center gap-4">
@@ -246,6 +247,113 @@ export default function LandingPage() {
               <p className="text-sm leading-relaxed text-[#566166]">
                 The record passes into Finance purview where officers finalize legal validations and export the document into a strict formatting PDF array.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Demo Guide Section */}
+      <section id="demo-guide" className="relative overflow-hidden bg-[#f0f4f7] py-24">
+        <div className="absolute right-0 top-0 -z-10 h-[500px] w-[500px] translate-x-1/3 -translate-y-1/3 rounded-full bg-blue-200/40 blur-3xl" />
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          <div className="mb-16 md:flex md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <h2
+                className="text-3xl font-bold md:text-4xl"
+                style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}
+              >
+                Live Demo Playbook
+              </h2>
+              <p className="mt-4 text-lg text-[#566166] leading-relaxed">
+                Want to see the engine in action? Follow this exact testing scenario to experience the multi-role validation, real-time WebSocket broadcasting, and strict budget utilization rules.
+              </p>
+            </div>
+            <div className="mt-6 md:mt-0">
+              <Link
+                href="/login"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 text-sm font-bold text-[#0053db] shadow-md transition-all hover:bg-gray-50 active:scale-95"
+                style={{ fontFamily: FONT_MANROPE }}
+              >
+                Start Testing Now <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {/* Playbook Step 1 */}
+            <div className="group relative rounded-3xl bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 border border-transparent hover:border-blue-100">
+              <div className="absolute -right-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#0053db] text-xl font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+                1
+              </div>
+              <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#0053db]">
+                <Briefcase size={24} />
+              </div>
+              <h3 className="mb-3 text-lg font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
+                Log in as Requester
+              </h3>
+              <p className="text-sm text-[#566166] leading-relaxed">
+                Check the Analytics Dashboard to see your department's budget capacity. Next, navigate to the creation module and draft a Purchase Order.
+              </p>
+              <div className="mt-4 rounded-xl bg-orange-50 p-3 text-xs text-orange-800 border border-orange-100">
+                <strong>System Logic:</strong> If a department has exhausted its budget—or hasn't been allocated one for the fiscal year—Axon will permanently lock PO creation.
+              </div>
+            </div>
+
+            {/* Playbook Step 2 */}
+            <div className="group relative rounded-3xl bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 border border-transparent hover:border-blue-100">
+              <div className="absolute -right-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#0053db] text-xl font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+                2
+              </div>
+              <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <Zap size={24} />
+              </div>
+              <h3 className="mb-3 text-lg font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
+                Simulate WebSockets
+              </h3>
+              <p className="text-sm text-[#566166] leading-relaxed">
+                Successfully submit the PO. Then, open a second browser window and log in as the <strong>Manager</strong> for the same department.
+              </p>
+              <div className="mt-4 rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 border border-indigo-100">
+                <strong>Magic Moment:</strong> Without refreshing the Manager's page, watch the "New PO Pending" notification slide in instantly via STOMP/RabbitMQ!
+              </div>
+            </div>
+
+            {/* Playbook Step 3 */}
+            <div className="group relative rounded-3xl bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 border border-transparent hover:border-blue-100">
+              <div className="absolute -right-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#0053db] text-xl font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+                3
+              </div>
+              <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-600">
+                <ShieldCheck size={24} />
+              </div>
+              <h3 className="mb-3 text-lg font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
+                Managerial Approval
+              </h3>
+              <p className="text-sm text-[#566166] leading-relaxed">
+                As the Manager, verify the requested items and proceed to grant your approval. 
+              </p>
+              <div className="mt-4 rounded-xl bg-teal-50 p-3 text-xs text-teal-800 border border-teal-100">
+                <strong>Data Isolation:</strong> Axon securely guarantees Managers can only access and approve Purchase Orders emerging from their exact department.
+              </div>
+            </div>
+
+            {/* Playbook Step 4 */}
+            <div className="group relative rounded-3xl bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 border border-transparent hover:border-blue-100">
+              <div className="absolute -right-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#0053db] text-xl font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+                4
+              </div>
+              <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
+                <BarChart3 size={24} />
+              </div>
+              <h3 className="mb-3 text-lg font-bold" style={{ color: "#2a3439", fontFamily: FONT_MANROPE }}>
+                Finance Lock & Analytics
+              </h3>
+              <p className="text-sm text-[#566166] leading-relaxed">
+                Log in as <strong>Finance</strong>. Provide the final authorization. The system will definitively deduct the funds.
+              </p>
+              <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-xs text-emerald-800 border border-emerald-100">
+                <strong>Live Sync:</strong> Navigate to the Analytics tab to observe your department's interactive Spending Trend chart update dynamically.
+              </div>
             </div>
           </div>
         </div>
