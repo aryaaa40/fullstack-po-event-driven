@@ -37,6 +37,40 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     @Query("SELECT COALESCE(SUM(po.amount), 0) FROM PurchaseOrder po WHERE po.department.id = :deptId AND po.status = :status")
     BigDecimal sumAmountByDepartmentAndStatus(@Param("deptId") Long deptId, @Param("status") PurchaseOrderStatus status);
 
+    @Query("SELECT po.category as category, SUM(po.amount) as amount FROM PurchaseOrder po " +
+           "WHERE po.status = 'FINANCE_APPROVED' GROUP BY po.category")
+    List<Object[]> getSpendingByCategory();
+
+    @Query("SELECT po.category as category, SUM(po.amount) as amount FROM PurchaseOrder po " +
+           "WHERE po.status = 'FINANCE_APPROVED' AND po.department.id = :deptId GROUP BY po.category")
+    List<Object[]> getSpendingByCategoryAndDepartment(@Param("deptId") Long deptId);
+
+    @Query(value = "SELECT TO_CHAR(created_at, 'Mon') as month, SUM(amount) as total " +
+                   "FROM purchase_orders " +
+                   "WHERE status = 'FINANCE_APPROVED' " +
+                   "GROUP BY month, DATE_TRUNC('month', created_at) " +
+                   "ORDER BY DATE_TRUNC('month', created_at)", nativeQuery = true)
+    List<Object[]> getMonthlySpendingTrend();
+
+    @Query(value = "SELECT TO_CHAR(created_at, 'Mon') as month, SUM(amount) as total " +
+                   "FROM purchase_orders " +
+                   "WHERE status = 'FINANCE_APPROVED' AND department_id = :deptId " +
+                   "GROUP BY month, DATE_TRUNC('month', created_at) " +
+                   "ORDER BY DATE_TRUNC('month', created_at)", nativeQuery = true)
+    List<Object[]> getMonthlySpendingTrendByDepartment(@Param("deptId") Long deptId);
+
+    @Query("SELECT COUNT(po) FROM PurchaseOrder po WHERE po.status = 'FINANCE_APPROVED'")
+    long countApprovedOrders();
+
+    @Query("SELECT COUNT(po) FROM PurchaseOrder po WHERE po.status = 'FINANCE_APPROVED' AND po.department.id = :deptId")
+    long countApprovedOrdersByDepartment(@Param("deptId") Long deptId);
+
+    @Query("SELECT COALESCE(SUM(po.amount), 0) FROM PurchaseOrder po WHERE po.status = 'FINANCE_APPROVED'")
+    BigDecimal sumTotalApprovedAmount();
+
+    @Query("SELECT COUNT(po) FROM PurchaseOrder po WHERE po.department.id = :deptId")
+    long countByDepartmentId(@Param("deptId") Long deptId);
+
     @Query("SELECT COALESCE(SUM(po.amount), 0) FROM PurchaseOrder po WHERE po.department.id = :deptId AND po.status IN :statuses")
     BigDecimal sumAmountByDepartmentAndStatuses(@Param("deptId") Long deptId, @Param("statuses") List<PurchaseOrderStatus> statuses);
 }
